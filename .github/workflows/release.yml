@@ -43,8 +43,8 @@ jobs:
         run: npm run build
       - name: test
         run: npm test
-      - name: check git directory
-        run: git rev-parse --git-dir .
+      - run: git config --global --add safe.directory '*'
+      - run: git rev-parse --git-dir .
         #run: git config --global --add safe.directory /__w/uzdu/uzdu
       - name: Skim distribution
         run: ./.github/scripts/skim-dist.mjs
