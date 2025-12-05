@@ -16,6 +16,9 @@ jobs:
   release:
     #needs: build
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://www.npmjs.com/package/uzdu
     if: github.ref == 'refs/heads/main'
     container:
       image: skipero/node-for-ghactions:24
