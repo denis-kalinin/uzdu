@@ -50,7 +50,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/keenrouter/uzdu.git"
+    "url": "git+https://github.com/denis-kalinin/uzdu.git"
   },
   "license": "ISC",
   "devDependencies": {
