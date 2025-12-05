@@ -2,9 +2,6 @@
   "name": "uzdu",
   "version": "0.0.0-dev",
   "description": "Universal zipper, downloader and uploader - UZDU. Move files to/from zip, clouds (AWS, Azure), to HTTP PUT (e.g. Nexus) and to SSH",
-  "bin": {
-    "uzdu": "dist/uzdu.js"
-  },
   "type": "module",
   "main": "dist/uzdu.js",
   "types": "dist/uzdu.d.ts",
