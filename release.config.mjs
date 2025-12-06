@@ -38,10 +38,14 @@ export default {
   branches: ["main"],
   plugins: [
     "@semantic-release/commit-analyzer",
+    ["@semantic-release/npm", {pkgRoot}],
+    "@semantic-release/changelog@6.0.0"
+  ]
+};
+
+/*
     [
       "@semantic-release/exec",
       {"verifyReleaseCmd": `npm run build -- --env.nextVersion=\${nextRelease.version} --outDir=${pkgRoot}/lib`}
     ],
-    ["@semantic-release/npm", {pkgRoot}],
-  ]
-};
+*/
