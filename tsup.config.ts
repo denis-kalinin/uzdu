@@ -36,6 +36,47 @@ try {
 console.log(buildEnv);
 */
 
+interface ImportMetaEnv {
+    nextVersion?: string;
+    GITHUB_RUN_NUMBER?: string | number;
+}
+declare global {
+    interface ImportMeta {
+        env?: ImportMetaEnv;
+    }
+}
+type ProcessArguments = {
+  "env.nextVersion"?: string
+}
+function isKeyOf<T extends object>(key: string | number | symbol, obj: T): key is keyof T {
+  return key in obj;
+}
+const getVersion = () => {
+  console.log("process arguments");
+  const args = getArgs(process.argv.slice(2)) as ProcessArguments;
+  console.dir(args);
+  console.log("----");
+  return args["env.nextVersion"] ? JSON.stringify(args["env.nextVersion"]) : (process.env.GITHUB_RUN_NUMBER ? JSON.stringify(`${packageJson.version}-build_${process.env.GITHUB_RUN_NUMBER}`) : JSON.stringify(packageJson.version));
+}
+
+const getArgs = (processArguments: string[]) => {
+  const argsObject =  processArguments.reduce<{[key:string]: string | true}>((args, arg) => {
+    if (arg.slice(0, 2) === "--") {
+      const longArg = arg.split("=");
+      const longArgFlag = longArg[0].slice(2);
+      const longArgValue = longArg.length > 1 ? longArg[1] : true;
+      args[longArgFlag] = longArgValue;
+    } else if (arg[0] === "-") {
+      const flags = arg.slice(1).split("");
+      flags.forEach((flag) => {
+        args[flag] = true;
+      });
+    }
+    return args;
+  }, {});
+  return argsObject;
+}
+
 export default defineConfig({
   entry: [
     "src/uzdu.ts",
@@ -53,7 +94,8 @@ export default defineConfig({
   sourcemap: false,
   minify: false,
   define: {
-    NPM_PACKAGE_VERSION: process.env.GITHUB_RUN_NUMBER ? JSON.stringify(`${packageJson.version}-build_${process.env.GITHUB_RUN_NUMBER}`) : JSON.stringify(packageJson.version),
+    //NPM_PACKAGE_VERSION: process.env.GITHUB_RUN_NUMBER ? JSON.stringify(`${packageJson.version}-build_${process.env.GITHUB_RUN_NUMBER}`) : JSON.stringify(packageJson.version),
+    NPM_PACKAGE_VERSION: getVersion(),
     NPM_PACKAGE_DESCRIPTION: JSON.stringify(packageJson.description),
   }
 });

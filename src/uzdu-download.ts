@@ -20,7 +20,7 @@ command.command("http")
     .default([])
   )
   .addOption(
-    new Option("-d|--dotenv [file]", "use a properties file (i.e. key=value) to load environment variables. For --aws: S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_RESION. For --azure: AZURE_STORAGE_CONNECTION_STRING")
+    new Option("-d|--dotenv [file]", "load environment variables from a property file, i.e. a file with \"key=value\" lines.")
     .preset(".env"))
   .action(async (url: string, to: string | undefined, options: any, thisCommand: Command) => {
     if(options.dotenv){

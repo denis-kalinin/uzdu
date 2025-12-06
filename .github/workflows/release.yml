@@ -39,15 +39,10 @@ jobs:
             ${{ runner.os }}-node-
       - name: install NPM dependencies
         run: npm ci
-      - name: build
-        run: npm run build
       - name: test
         run: npm test
       - run: git config --global --add safe.directory '*'
-      - run: git rev-parse --git-dir .
-        #run: git config --global --add safe.directory /__w/uzdu/uzdu
-      - name: Create skim distribution
-        run: node .github/scripts/skim-dist.mjs
+      #- run: git rev-parse --git-dir .
       - name: Publish with ACT
         if: ${{ env.ACT }} ## gh act -j release --secret-file .env
         run: npx -y semantic-release@25 --no-ci --dry-run

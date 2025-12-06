@@ -18,7 +18,7 @@ command.command("aws")
   .argument("<from>", "the directory to upload to the <bucket>")
   .argument("<bucket>", "the AWS S3 bucket[:region[:endpoint]], e.g. \"mybucket\", \"mybucket:us-east-2\" or \"mybucket:my-region:https://my-s3-provider/endpoint\". [:region] overrides S3_REGION environment variables. Expects S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY in environment variables")
   .addOption(
-    new Option("-d|--dotenv [file]", "use a properties file (i.e. key=value) to load environment variables. For --aws: S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_RESION.")
+    new Option("-d|--dotenv [file]", "load environment variables from a property file, i.e. a file with \"key=value\" lines.")
     .preset(".env"))
   .action(async (from: string, bucket: string, options: any, thisCommand: Command) => {
     try{
@@ -56,7 +56,7 @@ command.command("http")
     .default([])
   )
   .addOption(
-    new Option("-d|--dotenv [file]", "use a properties file (i.e. key=value) to load environment variables.")
+    new Option("-d|--dotenv [file]", "load environment variables from a property file, i.e. a file with \"key=value\" lines.")
     .preset(".env"))
   .action(async (from: string, url: string, options: any, thisCommand: Command) => {
     if(options.dotenv){
@@ -73,11 +73,11 @@ command.command("http")
 
 command.command("azure")
   .alias("az")
-  .description("upload to Azure storage accaount")
+  .description("upload to Azure storage accaount, requires environment variable AZURE_STORAGE_CONNECTION_STRING")
   .argument("<from>", "upload this directory or file to a [container]")
   .addArgument(new Argument("[container]", "container name").default("$web", "$web"))
   .addOption(
-    new Option("-d|--dotenv [file]", "use a properties file (i.e. key=value) to load environment variables. For --azure: AZURE_STORAGE_CONNECTION_STRING")
+    new Option("-d|--dotenv [file]", "load environment variables from a property file, i.e. a file with \"key=value\" lines.")
     .preset(".env"))
   .action(async (from: string, container: string, options: any, thisCommand: Command) => {
     try {
@@ -106,7 +106,7 @@ command.command("ssh")
   .argument("<destination>", "desitnation directory or file")
   .option("--target <target>", "server hostname/ip-address and optional SSH-port, e.g. 10.100.0.1:22")
   .addOption(
-    new Option("-d|--dotenv [file]", "use a properties file (i.e. key=value) to load environment variables. For --aws: S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_RESION. For --azure: AZURE_STORAGE_CONNECTION_STRING")
+    new Option("-d|--dotenv [file]", "load environment variables from a property file, i.e. a file with \"key=value\" lines.")
     .preset(".env"))
   .addOption(new Option("--targetUsername [targetUsername]", "SSH username for <target>").default("root"))
   .addOption(new Option("--targetKey [targetKey]", "SSH private key"))
