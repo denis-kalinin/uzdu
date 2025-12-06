@@ -1,7 +1,7 @@
 {
   "name": "uzdu",
   "version": "0.0.0-dev",
-  "description": "Universal zipper, downloader and uploader - UZDU. Move files to/from zip, clouds (AWS, Azure), to HTTP PUT (e.g. Nexus) and to SSH",
+  "description": "UZDU - universal zipper, downloader and uploader. Move files to/from zip, clouds (AWS, Azure), to HTTP PUT (e.g. Nexus) and to SSH",
   "bin": {
     "uzdu": "lib/uzdu.js"
   },
