@@ -38,7 +38,7 @@ const getConfig = () =>  {
     branches: ["main"],
     plugins: [
       "@semantic-release/commit-analyzer",
-      ["@semantic-release/npm", {"pkgRoot": pkgRoot}],
+      ["@semantic-release/npm", {"pkgRoot": "distTemp"}],
       "@semantic-release/changelog@6.0.0"
     ]
   }
