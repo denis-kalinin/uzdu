@@ -47,7 +47,6 @@
   },
   "license": "UNLICENSED",
   "devDependencies": {
-    "@semantic-release/exec": "^7.1.0",
     "@types/chai": "^4.3.20",
     "@types/chai-as-promised": "^7.1.8",
     "@types/mime-types": "^2.1.4",

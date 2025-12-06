@@ -37,18 +37,17 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      - name: install NPM dependencies
-        run: npm ci
-      - name: test
-        run: npm test
+      - run: npm ci
+      - run: npm test
       - run: git config --global --add safe.directory '*'
       #- run: git rev-parse --git-dir .
       #- run: npm run release
-      - name: Publish with ACT
+      #- run: npm i -g @semantic-release/exec@7.1.0
+      - name: Publish with netkos/act
         if: ${{ env.ACT }} ## gh act -j release --secret-file .env
-        run: npx -y semantic-release@25 --no-ci --dry-run
-      - name: Publish in Github
+        run: npx -y --package semantic-release --package @semantic-release/exec semantic-release --no-ci --dry-run
+      - name: Publish on Github
         if: ${{ !env.ACT }}
-        run: npx -y semantic-release@25
+        run: npx -y --package semantic-release --package @semantic-release/exec semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
