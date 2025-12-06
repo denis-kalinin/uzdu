@@ -9,8 +9,8 @@ const command = new Command();
 
 command
   .name("uzdu zip")
-  .argument("<from>", "adding this directory or file to a zip-archive")
-  .argument("[to]", "a zip archive (default: <from>.zip)")
+  .argument("<from>", "add a directory or a file to a zip-archive")
+  .argument("[to]", "a zip-archive path (default: <from>.zip)")
   .action(async (from: string, to: string | undefined, options: any, command: Command) => {
     const toZip = to || `${path.basename(from)}.zip`;
     const absToZip = path.resolve(toZip);
