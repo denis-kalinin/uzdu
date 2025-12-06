@@ -2,8 +2,9 @@ import { readFileSync, writeFileSync, cpSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-const pkgRoot = "distTemp";
-function init(){
+
+function getPkgRoot(){
+  const pkgRoot = "distTemp";
   console.info(`Temporary distribution directory: ${pkgRoot}`);
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
@@ -27,18 +28,23 @@ function init(){
   //const buildDir = resolve(__dirname, "dist");
   //cpSync(buildDir, resolve(__dirname, pkgRoot, "lib"), { recursive: true });
   writeFileSync(resolve(__dirname, pkgRoot, 'package.json'), JSON.stringify(packageJson, null, 2) + '\n', 'utf8');
+  return pkgRoot;
 }
-init();
+
 /**
- * @type {{ branches: string[], plugins: (string | [string, {pkgRoot?: string, analyzeCommitsCmd?: string, verifyReleaseCmd?: string}])[]}}
+ * type {{ branches: string[], plugins: (string | [string, {pkgRoot?: string, analyzeCommitsCmd?: string, verifyReleaseCmd?: string}])[]}}
  *  semantic-release/release-notes-generator
+ */
+/**
+ * 
+ * @returns @type {import('semantic-release').GlobalConfig}
  */
 const getConfig = () =>  {
   const config = {
     branches: ["main"],
     plugins: [
       "@semantic-release/commit-analyzer",
-      ["@semantic-release/npm", {"pkgRoot": "distTemp"}],
+      ["@semantic-release/npm", {pkgRoot: getPkgRoot()}],
       "@semantic-release/changelog@6.0.0"
     ]
   }
