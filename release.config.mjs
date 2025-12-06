@@ -39,7 +39,7 @@ export default {
   plugins: [
     "@semantic-release/commit-analyzer",
     ["@semantic-release/exec", {
-      "prepareCmd": `npm run build -- --env.nextVersion=\${nextRelease.version} --outDir=${pkgRoot}`,
+      "verifyReleaseCmd": `npm run build -- --env.nextVersion=\${nextRelease.version} --outDir=${pkgRoot}`,
     }],
     ["@semantic-release/npm", {pkgRoot}],
   ]
