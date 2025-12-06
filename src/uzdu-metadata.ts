@@ -6,7 +6,7 @@ const command = new Command();
 command
   .name("uzdu meta")
   .argument("<dir>", "a directory")
-  .addArgument(new Argument("[metadata-file]", "a JSON-file with directory metadata, that will be added to the same directory")
+  .addArgument(new Argument("[metadata-file]", "a JSON-file with a directory metadata for Amazon S3, adds the metadata file to the same directory. See https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingMetadata.html")
     .default(".metadata.json"))
   .action(async (dir: string, metadataFile: string) => {
     try {

@@ -22,17 +22,9 @@
     "test:metadata": "tsx src/uzdu.ts metadata test/website",
     "test": "ts-mocha -p test/tsconfig.json",
     "_test": "ts-mocha",
-    "test:publish": "clean-publish --before-script ./releng/timestamped-version.mjs --temp-dir publish-temp",
-    "test:publish-dry": "clean-publish --before-script ./releng/timestamped-version.mjs --temp-dir publish-temp --without-publish",
-    "test:pack": "clean-publish --temp-dir publish-temp --without-publish",
     "test:peeldist": "node ./releng/skim-dist.mjs --publishTempDir=tmpPublish",
     "help": "ts-node src/uzdu.ts -h",
-    "ver": "ts-node src/uzdu.ts -V",
-    "ci:build": "npm run build",
-    "_version": "npm test",
-    "_prepack": "clean-publish",
-    "_postversion": "git push --tags origin master",
-    "release": "npm run build -- && node .github/scripts/skim-dist.mjs"
+    "ver": "ts-node src/uzdu.ts -V"
   },
   "keywords": [
     "azure",

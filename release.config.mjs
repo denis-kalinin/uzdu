@@ -38,9 +38,8 @@ export default {
   branches: ["main"],
   plugins: [
     "@semantic-release/commit-analyzer",
-    "@semantic-release/release-notes-generator",
     ["@semantic-release/exec", {
-      "prepareCmd": "npm run build -- --env.nextVersion=${nextRelease.version}",
+      "prepareCmd": `npm run build -- --env.nextVersion=\${nextRelease.version} --outDir=${pkgRoot}`,
     }],
     ["@semantic-release/npm", {pkgRoot}],
   ]

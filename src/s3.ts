@@ -14,10 +14,13 @@ export interface S3Config {
 
 export default async function upload(dir: string, s3config: S3Config, metadataFile: string = ".metadata.json"){
   if(!s3config.accessKeyId || !s3config.secretAccessKey || !s3config.region) {
-    throw Error("AWS credenitals not found in environement vairabes (AWS_KEY_ID, AWS_SECRET_KEY, AWS_REGION) - put them in .env file in the pwd directory");
+    throw new Error("AWS credenitals not found in environement vairabes (AWS_KEY_ID, AWS_SECRET_KEY) - you may put them in .env file in the pwd directory and add -d command paramter.");
+  }
+  if(!s3config.region){
+    throw new Error("Neither \"region\" paramter nor \"AWS_REGION\" environment variable found: add region into command parameters or define it as environment variable");
   }
   if(!s3config.bucket){
-    throw new Error("bucket name is required for S3");
+    throw new Error("bucket name is required for Amazon S3");
   }
   const { accessKeyId, secretAccessKey, region, endpoint } = s3config;
   const client = new S3Client({

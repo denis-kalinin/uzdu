@@ -34,7 +34,7 @@ program.command("download", "download from URL")
 program.command("zip", "create zip-archive from a directory or a file");
 program.command("unzip", "unzip archive to a directory");
 program.command("copy", "copy files and directories");
-program.command("metadata", "create metadata (i.e. information for HTTP headers), depending on specific patterns for files.")
+program.command("metadata", "create Amazon S3 metadata file. See https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingMetadata.html.")
   .alias("meta")
   
 program.configureOutput(outputConfiguration);
