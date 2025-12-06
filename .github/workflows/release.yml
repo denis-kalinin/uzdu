@@ -44,7 +44,7 @@ jobs:
       - run: git config --global --add safe.directory '*'
       #- run: git rev-parse --git-dir .
       - name: test
-        run: npm run build
+        run: npm run release
       - name: Publish with ACT
         if: ${{ env.ACT }} ## gh act -j release --secret-file .env
         run: npx -y semantic-release@25 --no-ci --dry-run
