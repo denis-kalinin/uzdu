@@ -2,8 +2,8 @@ import { readFileSync, writeFileSync, cpSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
+const pkgRoot = "distTemp";
 function init(){
-  const pkgRoot = "distTemp";
   console.info(`Temporary distribution directory: ${pkgRoot}`);
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
@@ -31,16 +31,17 @@ function init(){
 init();
 
 /**
- * @type {{ plugins: (string | [string, {pkgRoot: string}])[]}}
+ * @type {{ plugins: (string | [string, {pkgRoot?: string, analyzeCommitsCmd?: string, verifyReleaseCmd?: string}])[]}}
  *  semantic-release/release-notes-generator
  */
 export default {
   branches: ["main"],
   plugins: [
     "@semantic-release/commit-analyzer",
-    ["@semantic-release/exec", {
-      "verifyReleaseCmd": `npm run build -- --env.nextVersion=\${nextRelease.version} --outDir=${pkgRoot}`,
-    }],
+    [
+      "@semantic-release/exec",
+      {"verifyReleaseCmd": `npm run build -- --env.nextVersion=\${nextRelease.version} --outDir=${pkgRoot}`}
+    ],
     ["@semantic-release/npm", {pkgRoot}],
   ]
 };
