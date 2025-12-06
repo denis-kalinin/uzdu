@@ -29,19 +29,24 @@ function init(){
   writeFileSync(resolve(__dirname, pkgRoot, 'package.json'), JSON.stringify(packageJson, null, 2) + '\n', 'utf8');
 }
 init();
-
 /**
- * @type {{ plugins: (string | [string, {pkgRoot?: string, analyzeCommitsCmd?: string, verifyReleaseCmd?: string}])[]}}
+ * @type {{ branches: string[], plugins: (string | [string, {pkgRoot?: string, analyzeCommitsCmd?: string, verifyReleaseCmd?: string}])[]}}
  *  semantic-release/release-notes-generator
  */
-export default {
-  branches: ["main"],
-  plugins: [
-    "@semantic-release/commit-analyzer",
-    ["@semantic-release/npm", {pkgRoot}],
-    "@semantic-release/changelog@6.0.0"
-  ]
+const getConfig = () =>  {
+  const config = {
+    branches: ["main"],
+    plugins: [
+      "@semantic-release/commit-analyzer",
+      ["@semantic-release/npm", {"pkgRoot": pkgRoot}],
+      "@semantic-release/changelog@6.0.0"
+    ]
+  }
+  console.info("semantic-release config");
+  console.dir(config);
+  return config;
 };
+export default getConfig();
 
 /*
     [
