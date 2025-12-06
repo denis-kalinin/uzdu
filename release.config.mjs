@@ -24,8 +24,8 @@ function init(){
     keywords, author, repository, license, dependencies,
     engines, files
   }
-  const buildDir = resolve(__dirname, "dist");
-  cpSync(buildDir, resolve(__dirname, pkgRoot, "lib"), { recursive: true });
+  //const buildDir = resolve(__dirname, "dist");
+  //cpSync(buildDir, resolve(__dirname, pkgRoot, "lib"), { recursive: true });
   writeFileSync(resolve(__dirname, pkgRoot, 'package.json'), JSON.stringify(packageJson, null, 2) + '\n', 'utf8');
 }
 init();
@@ -40,7 +40,7 @@ export default {
     "@semantic-release/commit-analyzer",
     [
       "@semantic-release/exec",
-      {"verifyReleaseCmd": `npm run build -- --env.nextVersion=\${nextRelease.version} --outDir=${pkgRoot}`}
+      {"verifyReleaseCmd": `npm run build -- --env.nextVersion=\${nextRelease.version} --outDir=${pkgRoot}/lib`}
     ],
     ["@semantic-release/npm", {pkgRoot}],
   ]
