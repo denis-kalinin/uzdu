@@ -51,8 +51,9 @@ jobs:
           dry_run: true
           ci: false
           # You can specify specifying version range for the extra plugins if you prefer.
+          #@semantic-release/changelog@6.0.0
           extra_plugins: |
-            @semantic-release/changelog@6.0.0
+            @semantic-release/exec@7.1.0
       - name: Publish on Github
         if: ${{ !env.ACT }}
         #run: npx -y --package semantic-release --package @semantic-release/exec semantic-release
