@@ -45,21 +45,15 @@ jobs:
       #- run: npm i -g @semantic-release/exec@7.1.0
       - name: Publish with netkos/act
         if: ${{ env.ACT }} ## gh act -j release --secret-file .env
-        #run: npx -y --package semantic-release --package @semantic-release/exec semantic-release --no-ci --dry-run
-        uses: cycjimmy/semantic-release-action@v6
-        with:
-          dry_run: true
-          ci: false
-          # You can specify specifying version range for the extra plugins if you prefer.
-          #@semantic-release/changelog@6.0.0
-          extra_plugins: |
-            @semantic-release/exec@7.1.0
+        run: npx -y --package semantic-release --package @semantic-release/exec semantic-release --no-ci --dry-run
+        #uses: cycjimmy/semantic-release-action@v6
+        #with:
+        #  dry_run: true
+        #  ci: false
+        #  extra_plugins: |
+        #    @semantic-release/exec@7.1.0
       - name: Publish on Github
         if: ${{ !env.ACT }}
-        #run: npx -y --package semantic-release --package @semantic-release/exec semantic-release
-        uses: cycjimmy/semantic-release-action@v6
-        with:
-          extra_plugins: |
-            @semantic-release/exec@7.1.0
+        run: npx -y --package semantic-release --package @semantic-release/exec semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
