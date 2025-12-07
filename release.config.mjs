@@ -1,11 +1,14 @@
-import { readFileSync, writeFileSync, cpSync } from 'fs';
+import { readFileSync, writeFileSync, cpSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-
+/**
+ * 
+ * @returns @type {{pkgRoot: string, libDir: string}}
+ */
 function getPkgRoot(){
   const pkgRoot = "distTemp";
-  console.info(`Temporary distribution directory: ${pkgRoot}`);
+  //console.info(`Temporary distribution directory: ${pkgRoot}`);
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
   const originalPackageJsonPath = resolve(__dirname, 'package.json');
@@ -19,7 +22,8 @@ function getPkgRoot(){
   if(!publishConfig.tag) {
       publishConfig.tag="latest";
   }
-  const files = ["lib"];
+  const packageLibDir = "lib";
+  const files = [packageLibDir];
   const packageJson = {
     name, version, description, bin, type, main, types, 
     keywords, author, repository, license, dependencies,
@@ -27,36 +31,30 @@ function getPkgRoot(){
   }
   //const buildDir = resolve(__dirname, "dist");
   //cpSync(buildDir, resolve(__dirname, pkgRoot, "lib"), { recursive: true });
+  mkdirSync(resolve(__dirname, pkgRoot, packageLibDir), { recursive: true });
   writeFileSync(resolve(__dirname, pkgRoot, 'package.json'), JSON.stringify(packageJson, null, 2) + '\n', 'utf8');
-  return pkgRoot;
+  //console.info(`distirbution package.json created in temporary dir ${pkgRoot}`);
+  return {pkgRoot, libDir: `${pkgRoot}/${packageLibDir}`}
 }
 
 /**
- * type {{ branches: string[], plugins: (string | [string, {pkgRoot?: string, analyzeCommitsCmd?: string, verifyReleaseCmd?: string}])[]}}
- *  semantic-release/release-notes-generator
+ * @reutnr @type {import('semantic-release').GlobalConfig}
  */
-/**
- * 
- * @returns @type {import('semantic-release').GlobalConfig}
- */
-const getConfig = () =>  {
+const getConfig = () => {
+  const { pkgRoot, libDir } = getPkgRoot();
   const config = {
     branches: ["main"],
     plugins: [
       "@semantic-release/commit-analyzer",
-      ["@semantic-release/npm", {pkgRoot: getPkgRoot()}],
+      [
+        "@semantic-release/exec",
+        {"verifyReleaseCmd": `npm run build -- --env.nextVersion=\${nextRelease.version} --outDir=${libDir}`}
+      ],
+      ["@semantic-release/npm", {pkgRoot}],
       "@semantic-release/changelog@6.0.0"
     ]
   }
-  console.info("semantic-release config");
-  console.dir(config);
   return config;
 };
-export default getConfig();
 
-/*
-    [
-      "@semantic-release/exec",
-      {"verifyReleaseCmd": `npm run build -- --env.nextVersion=\${nextRelease.version} --outDir=${pkgRoot}/lib`}
-    ],
-*/
+export default getConfig();

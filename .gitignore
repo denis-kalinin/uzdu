@@ -2,6 +2,7 @@ node_modules/
 dist/
 test/.env
 temp/
+distTemp/
 .env
 .npmrc
 examples/uploading-distribution/.terraform
