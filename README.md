@@ -1,11 +1,27 @@
-# Convinient deployment tool
+# UZDU – Universal Zip archiver, Downloader and Uploader for Node.js/Deno/Bun
 
-UZDU is a convinient tool to deploy files to a web server. If you're a DevOps enthusiast and prefer to stay in your familiar NodeJS environment, you can deploy using this tool.
 
-You have NodeJS intalled, then run:
+[![Release](https://github.com/denis-kalinin/uzdu/actions/workflows/release.yml/badge.svg?event=workflow_dispatch)](https://github.com/denis-kalinin/uzdu/actions/workflows/release.yml)
+[![NPM Downloads](https://img.shields.io/npm/dm/uzdu)](https://www.npmjs.com/package/uzdu)
+
+
+UZDU is a convinient tool to deploy files to a web server. If you're a DevOps enthusiast and prefer to stay in your familiar <span>Node.js</span> environment, you can deploy using this tool.
+
+Node.js:
 ```bash
 npx uzdu -h
 ```
+
+Deno:
+```bash
+deno run -A npm:uzdu -h
+```
+
+Bun:
+```
+bunx uzdu -h
+```
+
 ## uploading
 
 - [Amazon S3](https://docs.aws.amazon.com/s3/) `npx uzdu up aws -h`

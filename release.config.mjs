@@ -29,8 +29,6 @@ function getPkgRoot(){
     keywords, author, repository, license, dependencies,
     engines, files
   }
-  //const buildDir = resolve(__dirname, "dist");
-  //cpSync(buildDir, resolve(__dirname, pkgRoot, "lib"), { recursive: true });
   mkdirSync(resolve(__dirname, pkgRoot, packageLibDir), { recursive: true });
   writeFileSync(resolve(__dirname, pkgRoot, 'package.json'), JSON.stringify(packageJson, null, 2) + '\n', 'utf8');
   try{
@@ -49,16 +47,13 @@ const getConfig = () => {
     branches: ["main"],
     plugins: [
       "@semantic-release/commit-analyzer",
-      "@semantic-release/release-notes-generator",
       [
         "@semantic-release/exec",
         {"verifyReleaseCmd": `npm run build -- --env.nextVersion=\${nextRelease.version} --outDir=${libDir}`}
       ],
-      ["@semantic-release/npm", {pkgRoot}],
-      "@semantic-release/changelog"
+      ["@semantic-release/npm", {pkgRoot}]
     ]
   }
   return config;
 };
-//      "@semantic-release/changelog@6.0.0"
 export default getConfig();
