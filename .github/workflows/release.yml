@@ -45,7 +45,7 @@ jobs:
       #- run: npm i -g @semantic-release/exec@7.1.0
       - name: Publish with netkos/act
         if: ${{ env.ACT }} ## gh act -j release --secret-file .env
-        run: npx -y --package semantic-release --package @semantic-release/exec semantic-release --no-ci --dry-run
+        run: npx -y --package semantic-release@25 --package @semantic-release/exec@7 -- semantic-release --no-ci --dry-run
         #uses: cycjimmy/semantic-release-action@v6
         #with:
         #  dry_run: true
@@ -54,6 +54,6 @@ jobs:
         #    @semantic-release/exec@7.1.0
       - name: Publish on Github
         if: ${{ !env.ACT }}
-        run: npx -y --package semantic-release --package @semantic-release/exec semantic-release
+        run: npx -y --package semantic-release@25 --package @semantic-release/exec@7 -- semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
