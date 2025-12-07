@@ -50,11 +50,10 @@ const getConfig = () => {
         "@semantic-release/exec",
         {"verifyReleaseCmd": `npm run build -- --env.nextVersion=\${nextRelease.version} --outDir=${libDir}`}
       ],
-      ["@semantic-release/npm", {pkgRoot}],
-      "@semantic-release/changelog@6.0.0"
+      ["@semantic-release/npm", {pkgRoot}]
     ]
   }
   return config;
 };
-
+//      "@semantic-release/changelog@6.0.0"
 export default getConfig();
