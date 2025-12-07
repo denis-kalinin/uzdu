@@ -16,9 +16,9 @@ command
 command.command("aws")
   .description("upload to AWS S3")
   .argument("<from>", "the directory to upload to the <bucket>")
-  .argument("<bucket>", "the AWS S3 bucket[:region[:endpoint]], e.g. \"mybucket\", \"mybucket:us-east-2\" or \"mybucket:my-region:https://my-s3-provider/endpoint\". [:region] overrides S3_REGION environment variables. Expects S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY in environment variables")
+  .argument("<bucket>", "the AWS S3 bucket[:region[:endpoint]], e.g. \"mybucket\", \"mybucket:us-east-2\" or \"mybucket:my-region:https://my-s3-provider/endpoint\". [:region] overrides S3_REGION environment variable. Expects environment variables S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY.")
   .addOption(
-    new Option("-d|--dotenv [file]", "load environment variables from a property file, i.e. a file with \"key=value\" lines.")
+    new Option("-d|--dotenv [file]", "load environment variables from a properties file, i.e. a file with \"key=value\" lines.")
     .preset(".env"))
   .action(async (from: string, bucket: string, options: any, thisCommand: Command) => {
     try{
@@ -37,9 +37,9 @@ command.command("aws")
       const optConfig: Partial<S3Config> = { bucket: bucketName, endpoint, };
       if(region) optConfig.region = region;
       const config = Object.assign(env, optConfig) as S3Config;
-      if(!config.accessKeyId) throw new Error("AWS Access Key ID is not specified");
-      if(!config.secretAccessKey) throw new Error("AWS Secret Key is not specified");
-      if(!config.region) throw new Error("AWS region is not specified");
+      if(!config.accessKeyId) throw new Error("AWS Access Key ID is not specified. Provide an environement variable S3_ACCESS_KEY_ID.");
+      if(!config.secretAccessKey) throw new Error("AWS Secret Key is not specified. Provide an environment variable S3_SECRET_ACCESS_KEY.");
+      if(!config.region) throw new Error("AWS region is not specified. Provide it in a bucket address or as an envronment variable S3_REGION.");
       await s3Upload(from, config);
     } catch (e) {
       thisCommand.error((e as Error).message || e as string, { exitCode: 53, code: "aws.upload.error" });
@@ -51,12 +51,12 @@ command.command("http")
   .argument("<from>", "upload this file to a <url>")
   .argument("<url>", "URL for a PUT operation")
   .addOption(
-    new Option("--header <http-header>", "HTTP Header, e.g.: --header\"Authentication: cGFzc3dvcmQ=\"")
+    new Option("--header <http-header>", "HTTP Header, e.g.: --header \"Authentication: cGFzc3dvcmQ=\"")
     .argParser<string[]>((val, acc) => acc?.concat([val]))
     .default([])
   )
   .addOption(
-    new Option("-d|--dotenv [file]", "load environment variables from a property file, i.e. a file with \"key=value\" lines.")
+    new Option("-d|--dotenv [file]", "load environment variables from a properties file, i.e. a file with \"key=value\" lines.")
     .preset(".env"))
   .action(async (from: string, url: string, options: any, thisCommand: Command) => {
     if(options.dotenv){
@@ -73,7 +73,7 @@ command.command("http")
 
 command.command("azure")
   .alias("az")
-  .description("upload to Azure storage accaount, requires environment variable AZURE_STORAGE_CONNECTION_STRING")
+  .description("upload to Azure Blob Storage")
   .argument("<from>", "upload this directory or file to a [container]")
   .addArgument(new Argument("[container]", "container name").default("$web", "$web"))
   .addOption(

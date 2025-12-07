@@ -33,7 +33,10 @@ function getPkgRoot(){
   //cpSync(buildDir, resolve(__dirname, pkgRoot, "lib"), { recursive: true });
   mkdirSync(resolve(__dirname, pkgRoot, packageLibDir), { recursive: true });
   writeFileSync(resolve(__dirname, pkgRoot, 'package.json'), JSON.stringify(packageJson, null, 2) + '\n', 'utf8');
-  //console.info(`distirbution package.json created in temporary dir ${pkgRoot}`);
+  try{
+    cpSync(resolve(__dirname, "README.md"), resolve(__dirname, pkgRoot, 'README.md'));
+    cpSync(resolve(__dirname, "LICENSE"), resolve(__dirname, pkgRoot, 'LICENSE'));
+  }catch {}
   return {pkgRoot, libDir: `${pkgRoot}/${packageLibDir}`}
 }
 
@@ -46,11 +49,13 @@ const getConfig = () => {
     branches: ["main"],
     plugins: [
       "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
       [
         "@semantic-release/exec",
         {"verifyReleaseCmd": `npm run build -- --env.nextVersion=\${nextRelease.version} --outDir=${libDir}`}
       ],
-      ["@semantic-release/npm", {pkgRoot}]
+      ["@semantic-release/npm", {pkgRoot}],
+      "@semantic-release/changelog"
     ]
   }
   return config;

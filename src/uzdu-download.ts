@@ -15,7 +15,7 @@ command.command("http")
   .argument("<url>", "download URL")
   .argument("[to]", "a file or directory to save a download file: e.g.: temp/a.zip, temp/")
   .addOption(
-    new Option("--header <http-header>", "HTTP Header, e.g.: --header\"Authentication: cGFzc3dvcmQ=\"")
+    new Option("--header <http-header>", "HTTP Header, e.g.: --header \"Authentication: cGFzc3dvcmQ=\"")
     .argParser<string[]>((val, acc) => acc?.concat([val]))
     .default([])
   )

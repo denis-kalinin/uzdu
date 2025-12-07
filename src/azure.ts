@@ -12,7 +12,7 @@ export interface AzureStorageOptions {
 }
 
 export default async function upload(dir: string, options: AzureStorageOptions, metadataFile: string = ".metadata.json") {
-  if(!options.connectionString) throw Error("Azure uploader needs Azure connection string");
+  if(!options.connectionString) throw Error("Uploader needs connection string for Azure Blob Storage. Provide AZURE_STORAGE_CONNECTION_STRING environment variable!");
   const opts = Object.assign({}, {container: "$web"}, options);
   const blobServiceClient = BlobServiceClient.fromConnectionString(options.connectionString);
   const isDebug = process.env.DEBUG && process.env.DEBUG.toLowerCase() === "true";
