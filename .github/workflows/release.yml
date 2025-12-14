@@ -21,7 +21,7 @@ jobs:
       url: https://www.npmjs.com/package/uzdu
     if: github.ref == 'refs/heads/main'
     container:
-      image: skipero/node-for-ghactions:24
+      image: skipero/node-cli:24
     #if: github.ref == 'refs/heads/dev' && (startsWith(github.event.head_commit.message, 'release ') || startsWith(github.event.head_commit.message, 'rc ') )
     #if: github.base_ref == 'dev' && (startsWith(github.event.head_commit.message, 'release ') || startsWith(github.event.head_commit.message, 'rc ') )
     #if: startsWith(github.ref, 'refs/tags/') && github.base_ref == 'master' && contains(fromJSON('["release", "rc"]'), github.event.head_commit.message)
