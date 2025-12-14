@@ -1,37 +1,10 @@
-import { 
-    expect,
-    use,
-    should,
-} from "chai"; 
-//import "chai/register-should";
-import chaiAsPromised from "chai-as-promised";
+import { consola } from "consola";
 import { Command } from "commander";
-import { step } from "mocha-steps";
 import { getDirMap, getMakeDirs } from "../src/ssh";
 
-use(chaiAsPromised);
-should();
 
-
-describe.skip("Direct", () => {
-    step("... wihtout attachments", () => {
-      const program = new Command();
-      program
-        .exitOverride()
-        .command("order-cake")
-        .action(() => {});
-      let caughtErr: { code: string};
-      try {
-        program.parse(["node", "udu", "order-cake", "--color"]);
-      } catch (err) {
-        caughtErr = err as { code: string };
-        expect(caughtErr.code).to.equal("commander.unknownOption");
-      }
-    });
-});
-
-describe.skip("CLI", () => {
-  step("--help", () => {
+describe("Direct", () => {
+  it("... wihtout attachments", () => {
     const program = new Command();
     program
       .exitOverride()
@@ -39,16 +12,33 @@ describe.skip("CLI", () => {
       .action(() => {});
     let caughtErr: { code: string};
     try {
-      program.parse(["node", "udu", "order-cake", "--color"]);
+      program.parse(["node", "uzdu", "order-cake", "--color"]);
     } catch (err) {
       caughtErr = err as { code: string };
-      expect(caughtErr.code).to.equal("commander.unknownOption");
+      expect(caughtErr.code).toEqual("commander.unknownOption");
     }
   });
 });
 
-describe.skip("Utils", () => {
-  step("file map", () => {
+describe("CLI", () => {
+  it("--help", () => {
+    const program = new Command();
+    program
+      .exitOverride()
+      .command("order-cake")
+      .action(() => {});
+    let caughtErr: { code: string};
+    try {
+      program.parse(["node", "uzdu", "order-cake", "--color"]);
+    } catch (err) {
+      caughtErr = err as { code: string };
+      expect(caughtErr.code).toEqual("commander.unknownOption");
+    }
+  });
+});
+
+describe("Utils", () => {
+  it("file map", () => {
     const files = [
       "api-server/web.xml","api-server/api/a.js",
       "api-server/apias/b.js", "api-server/opta/u.js",
@@ -60,6 +50,6 @@ describe.skip("Utils", () => {
     ];
     const fileMap = getDirMap(files);
     const dirs = getMakeDirs(fileMap, "/opt/youroute.app/");
-    if(dirs) dirs.map((dir) => console.log(dir));
+    if(dirs) dirs.map((dir) => consola.log(dir));
   });
 });

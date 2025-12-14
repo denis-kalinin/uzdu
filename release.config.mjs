@@ -1,9 +1,12 @@
+/**
+ * This is configuration of the semantic-release Github action.
+ * See .github/workflows/release.yml
+ */
 import { readFileSync, writeFileSync, cpSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 /**
- * 
  * @returns @type {{pkgRoot: string, libDir: string}}
  */
 function getPkgRoot(){

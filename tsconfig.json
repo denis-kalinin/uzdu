@@ -10,7 +10,7 @@
     "esModuleInterop": true,
     "sourceMap": true,
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
 
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
@@ -18,15 +18,12 @@
     "allowJs": true,
     "isolatedModules": true,
     "moduleDetection": "force",
-
+    "paths": {
+      "@/*": ["./src/*"]
+    },
   },
   "lib": ["ESNext"],
   "include": [
-    "src/**/*.ts"
-  ],
-  "ts-node": {
-    "compilerOptions": {
-      "module": "commonjs"
-    }
-  }
+    "./src/**/*.ts"
+  ]
 }
