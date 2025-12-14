@@ -38,14 +38,15 @@ export default async function upload(dir: string, s3config: S3Config, metadataFi
     const metadataJson = fs.readFileSync(path.join(dir, metadataFile),  { encoding: "utf-8"});
     metadata = JSON.parse(metadataJson);
   }catch (e) {}
-  if(files.length == 1){ //hm... is dist a file? let's check
+  if(Object.keys(files).length == 1){ //hm... is dist a file? let's check
     const lstat = fs.lstatSync(dist);
     if(lstat.isFile()){
       dist = path.dirname(dist);
     }
   }
-  await Promise.all(files.map(async (file) => {
-    const filePath = path.resolve(dist, file);
+  await Promise.all(Object.entries(files).map(async ([file, absFile]) => {
+    //const filePath = path.resolve(dist, file);
+    const filePath = absFile;
     const fileContent = fs.readFileSync(filePath);
     const params: PutObjectCommandInput = {
       Bucket: s3config.bucket,

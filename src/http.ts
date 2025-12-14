@@ -10,7 +10,7 @@ export async function upload(dirOrFile: string, url: URL, headers?: string[]){
   const files = await utils.listFiles(distr);
   if(isDebug) console.log(`files to upload:  ${files.length}`);
   let singleUrl: URL;
-  if(files.length == 1){ //hm... is dist a file? let's check
+  if(Object.keys(files).length == 1){ //hm... is dist a file? let's check
     const lstat = fs.lstatSync(distr);
     if(lstat.isFile()){
       distr = path.dirname(distr);
@@ -18,10 +18,11 @@ export async function upload(dirOrFile: string, url: URL, headers?: string[]){
     }
   }
   const fixedBaseUrl = url.href.endsWith("/") ? url : new URL(`${url.href}/`);
-	await Promise.all(files.map(async (file) => {
+	await Promise.all(Object.entries(files).map(async ([file, absFile]) => {
     if(isDebug) console.log(`filename: ${file}`);
-    const localFilePath = path.resolve(distr, file);
-		const fileUrl = singleUrl || new URL(`${fixedBaseUrl}${file}`);
+    //const localFilePath = path.resolve(distr, file);
+    const localFilePath = absFile;
+	  const fileUrl = singleUrl || new URL(`${fixedBaseUrl}${file}`);
     if(isDebug) console.log(`uploading ${localFilePath} => ${fileUrl}`);
     await uploadFile(localFilePath, fileUrl, headers);
   }));
