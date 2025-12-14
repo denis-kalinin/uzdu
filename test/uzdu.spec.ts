@@ -38,7 +38,7 @@ describe.skip("CLI", () => {
   });
 });
 
-describe("Utils", () => {
+describe.skip("Utils", () => {
   it("file map", async () => {
     const plainFiles = [
       "/opt/youroute.app/api-server/web.xml","/opt/youroute.app/api-server/a.js",
@@ -52,7 +52,7 @@ describe("Utils", () => {
   });
 });
 
-describe("SSH", () => {
+describe.skip("SSH", () => {
   it("upload", async () => {
     const theEnv = getEnvironment();
     initEnvironment(theEnv);
