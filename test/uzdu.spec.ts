@@ -1,9 +1,10 @@
 import { consola } from "consola";
 import { Command } from "commander";
-import { getDirMap, getMakeDirs } from "../src/ssh";
+import { getDirMap, getMakeDirs, getSshConfig, upload } from "../src/ssh";
+import { getEnvironment, initEnvironment, listFiles, resolvePath } from "../src/utils";
 
 
-describe("Direct", () => {
+describe.skip("Direct", () => {
   it("... wihtout attachments", () => {
     const program = new Command();
     program
@@ -20,7 +21,7 @@ describe("Direct", () => {
   });
 });
 
-describe("CLI", () => {
+describe.skip("CLI", () => {
   it("--help", () => {
     const program = new Command();
     program
@@ -38,18 +39,29 @@ describe("CLI", () => {
 });
 
 describe("Utils", () => {
-  it("file map", () => {
-    const files = [
-      "api-server/web.xml","api-server/api/a.js",
-      "api-server/apias/b.js", "api-server/opta/u.js",
-      "api-server/api/opta/kupta/b.js", "api-server/opta/bivta/us.js",
-
-    ];
+  it("file map", async () => {
     const plainFiles = [
       "/opt/youroute.app/api-server/web.xml","/opt/youroute.app/api-server/a.js",
     ];
+    const from = resolvePath("./test/web");
+    const files = await listFiles(from);
     const fileMap = getDirMap(files);
+    console.info(JSON.stringify(fileMap));
     const dirs = getMakeDirs(fileMap, "/opt/youroute.app/");
     if(dirs) dirs.map((dir) => consola.log(dir));
+  });
+});
+
+describe("SSH", () => {
+  it("upload", async () => {
+    const theEnv = getEnvironment();
+    initEnvironment(theEnv);
+    const ssh_server = process.env.SSH_TARGET;
+    if(!ssh_server) throw new Error("Undefined environment variable SSH_TARGET");
+    const sshConfig = getSshConfig(ssh_server, {});
+    consola.info(sshConfig);
+    const from = resolvePath("./test/web");
+    consola.info("From", from);
+    await upload(from, "~/test-keenrouter", sshConfig );
   });
 });

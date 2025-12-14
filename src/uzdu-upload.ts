@@ -3,7 +3,7 @@ import { getEnvironment, initEnvironment, outputConfiguration, resolvePath, safe
 import azUpload, { AzureStorageOptions } from "./azure";
 import s3Upload, { S3Config } from "./s3";
 import { upload as httpUpload}  from "./http";
-import { SshConfig, upload as sshUpload } from "./ssh";
+import { getSshConfig, SshConfig, upload as sshUpload } from "./ssh";
 import { ConnectConfig } from "ssh2";
 import fs from "fs";
 
@@ -102,50 +102,18 @@ command.command("azure")
 
 command.command("ssh")
   .description("upload with SSH")
-  .argument("<source>", "source directory or file to upload <to_server>")
+  .argument("<source>", "source directory or file to upload into <ssh_server>")
+  .argument("<ssh_server>", "username and server hostname/ip-address and optional SSH-port - username@hostname[:port], e.g. root@10.100.0.1:22")
   .argument("<destination>", "desitnation directory or file")
-  .option("--target <target>", "server hostname/ip-address and optional SSH-port, e.g. 10.100.0.1:22")
   .addOption(
     new Option("-d|--dotenv [file]", "load environment variables from a property file, i.e. a file with \"key=value\" lines.")
     .preset(".env"))
-  .addOption(new Option("--targetUsername [targetUsername]", "SSH username for <target>").default("root"))
-  .addOption(new Option("--targetKey [targetKey]", "SSH private key"))
-  .addOption(new Option("--targetPassword [targetPassword]", "SSH password"))
-  .action(async (source: string, destination: string, options: any, thisCommand: Command) => {
+  .addOption(new Option("--targetKeyPath [targetKeyPath]", "Path to SSH private key, fallback is UZDU_SSH_KEY_PATH environment variable"))
+  .addOption(new Option("--targetKey [targetKey]", "SSH pirvate key, fallback is UZDU_SSH_KEY environment variable"))
+  .addOption(new Option("--targetPassword [targetPassword]", "SSH password, fallback is UZDU_SSH_PASSWORD environment variable"))
+  .action(async (source: string, ssh_server:string, destination: string, options: any, thisCommand: Command) => {
     try {
-      if(options.dotenv){
-        const theEnv = getEnvironment(options.dotenv);
-        initEnvironment(theEnv);
-      }
-      const hostParts = (options.target as string).split(":");
-      const host = hostParts[0];
-      const sPort = safeIndex(hostParts, 1) || 22;
-      const port = Number(sPort);
-      const conConfig: Pick<ConnectConfig, "host"|"port"|"username"> = {
-        host,
-        port,
-        username:  options.targetUsername
-      };
-      const privKeyPath = options.targetKey;
-      let password: string | undefined = undefined;
-      let privateKey: Buffer | string | undefined = undefined;
-      if(privKeyPath){
-        const resolvedKeyPath = resolvePath(options.targetKey);
-        try {
-          privateKey = fs.readFileSync( resolvedKeyPath );
-        } catch (e) {
-          throw new Error(`Not found private Key file ${resolvedKeyPath}`);
-        }
-      } else {
-        if(!options.targetPassword) throw new Error("Either --targetPassword or --targetKey should be specified");
-        password = options.targetPassword;
-      }
-      const authConfig: SshConfig = password ? {
-        password: password as string,
-      } : {
-        privateKey: privateKey as Buffer | string
-      };
-      const sshConfig: SshConfig = { ...conConfig, ...authConfig };
+      const sshConfig = getSshConfig(ssh_server, options);
       await sshUpload(resolvePath(source), destination, sshConfig);
     } catch (e) {
       console.error(e);

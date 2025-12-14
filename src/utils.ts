@@ -96,28 +96,49 @@ export function initEnvironment(env: { [key:string]: string }){
  * 
  * @param rootDir 
  * @param _dir 
- * @returns array of file pathes relative to rootDir
+ * @returns map, where key is path relative to rootDir, value is absolute filepath
  */
 export async function listFiles(rootDir: string, _dir?: string) {
   if(!_dir){
     const lstat = fs.lstatSync(rootDir);
     if(lstat.isFile()){
-      return [path.basename(rootDir)];
+      return { [path.basename(rootDir)]: rootDir};
     }
   }
   const cwd = _dir || rootDir;
-  const files = fs.readdirSync(cwd, { withFileTypes: true });
+  const files = fs.readdirSync( cwd, { withFileTypes: true });
   const fileList = await files.reduce(async (acc, file) => {
       const filePath = path.join(cwd, file.name);
+      let newAcc = {};
       if (file.isDirectory()) {
+        //const filesInDir = await listFiles(rootDir, filePath, _symlinkDir);
         const filesInDir = await listFiles(rootDir, filePath);
-        (await acc).push(...filesInDir);
+        newAcc = { ...(await acc), ...filesInDir };
+      } else if(file.isSymbolicLink()){
+        const symLinkAbsoluteTargetPath = path.resolve(cwd, fs.readlinkSync(filePath));
+        //console.info(`${filePath} ===> ${symLinkAbsoluteTargetPath}`);
+        const lstat = fs.lstatSync(symLinkAbsoluteTargetPath);
+        if(lstat.isDirectory()){
+          //const filesInDir = await listFiles(rootDir, filePath, symLinkAbsoluteTargetPath);
+          const filesInDir = await listFiles(rootDir, filePath);
+          newAcc = { ...(await acc), ...filesInDir };          
+        } else if(lstat.isFile()){
+          //newAcc = { ...(await acc), [filePath]: symLinkAbsoluteTargetPath.split(path.sep).join(path.posix.sep) }; 
+          newAcc = { ...(await acc), [filePath]: filePath.split(path.sep).join(path.posix.sep) };          
+        } else if(lstat.isSymbolicLink()) {
+          //const filePathLink = fs.readlinkSync(filePath);
+          //const embeddedSymLink = path.resolve(cwd, filePathLink);
+          const filesInDir = await listFiles(rootDir, filePath);
+          //console.dir("Is symlink", filesInDir);
+          newAcc = { ...(await acc), ...filesInDir };
+        }
       } else {
         const relativeFilePath = path.relative(rootDir, filePath).split(path.sep).join(path.posix.sep);
-        (await acc).push(relativeFilePath);
+        const absPath = path.resolve(rootDir, filePath).split(path.sep).join(path.posix.sep);
+        newAcc = { ...(await acc), [relativeFilePath]: absPath};
       }
-      return await acc;
-    }, Promise.resolve<string[]>([]));
+      return newAcc;
+    }, Promise.resolve<Record<string, string>>({}));
 
   return fileList;
 }
@@ -164,10 +185,9 @@ async function getMetadata(dir: string, metadataFile?: string): Promise<string>{
 export async function makeZip(fromDir: string, zipFilePath: string){
   const zip = new JSZip();
   const files = await listFiles(fromDir);
-  files.forEach( file => {
-    const filePath = path.join(fromDir, file);
-    const readStream = fs.createReadStream(filePath);
-    zip.file(file, readStream, {binary: true});
+  Object.entries(files).forEach( ([basePath, absPath]) => {
+    const readStream = fs.createReadStream(absPath);
+    zip.file(basePath, readStream, {binary: true});
   });
   return new Promise<string>((resolve, reject) => {
     zip

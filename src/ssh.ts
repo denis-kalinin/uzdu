@@ -1,12 +1,12 @@
 import { Client, ConnectConfig, SFTPWrapper, TransferOptions } from "ssh2";
-import fs from "node:fs";
+import fs from "fs";
 import path from "path";
-import { listFiles, safeIndex } from "./utils";
+import { getEnvironment, initEnvironment, listFiles, resolvePath, safeIndex } from "./utils";
 import deepmerge from "deepmerge";
 
 export type SshConfig = ConnectConfig & { password: string; privateKey?: undefined } | { password?: undefined ; privateKey: Buffer | string };
 
-export async function upload(source: string, destination: string, sshConfig: SshConfig) {
+export async function upload(source: string, sftpUrlPath: string, sshConfig: SshConfig) {
   await new Promise<void>((resolve, reject) => {
     fs.stat(source, async (err, stats) => {
       if(stats.isSymbolicLink()){
@@ -15,7 +15,7 @@ export async function upload(source: string, destination: string, sshConfig: Ssh
         const sshConnection = await connect(sshConfig);
         try{
           const files = await listFiles(source);
-          const _destination = destination.replace(/\/+$/, "");
+          const _destination = sftpUrlPath.replace(/\/+$/, "").replace(/^~/, ".");
           const _source = source.replace(/\/+$/, "");
           await mkdirs(sshConnection, _destination, files);
           await uploadFiles(files, _source, _destination, sshConnection);
@@ -37,7 +37,7 @@ const transferOptions: TransferOptions = {
   //step: (totalTransferred, chunk, total) => console.log(`Uploaded ${totalTransferred} bytes out of ${total}`)
 }
 
-async function mkdirs(sshConnection: Client, destination: string, sources: string[]){
+async function mkdirs(sshConnection: Client, destination: string, sources: Record<string, string>){
   const fileMap = getDirMap(sources);
   const makeDirs = getMakeDirs(fileMap, destination);
   const commands = makeDirs ? makeDirs.map((dir) => `mkdir -p "${dir}"`) : [`mkdir -p "${destination}"`];
@@ -74,17 +74,17 @@ function _uploadFile(source: string, destination: string, sftp: SFTPWrapper){
   });
 }
 
-function uploadFiles(sources: string[], source: string, destination: string, sshConnection: Client){
+function uploadFiles(sourceFiles: Record<string, string>, source: string, destination: string, sshConnection: Client){
   return new Promise<void>((resolve, reject) => {
     sshConnection.sftp(async (err, sftp) => {
       if(err){
         console.error("uploadFiles error");
         reject(err);
       } else {
-        if(sources.length == 1){
+        if(Object.keys(sourceFiles).length == 1){
           const lstat = fs.lstatSync(source);
           if(lstat.isFile()){
-            const dest = path.join(destination, sources[0]).replace(/\\/g, '/');
+            const dest = path.join(destination, sourceFiles[0]).replace(/\\/g, '/');
             const src = source;
             console.log(`Uploading file ${src} => ${dest}`);
             await _uploadFile(src, dest, sftp)
@@ -96,16 +96,23 @@ function uploadFiles(sources: string[], source: string, destination: string, ssh
             return;        
           }
         }
+        let sourceDir = source;
+        console.info("sourcing directory", sourceDir);
+        const lstat = fs.lstatSync(source);
+        if(lstat.isSymbolicLink()){
+          sourceDir = fs.readlinkSync(source);
+          console.info(`${source} ==> ${sourceDir}`);
+        }
         const promises: Promise<void>[] = [];
-        sources.map((f) => {
-          const dest = path.join(destination, f).replace(/\\/g, '/');
-          const src = path.join(source, f).replace(/\\/g, '/');
-          console.log(`Uploading ${src} => ${dest}`);
+        Object.entries(sourceFiles).map(([baseName, absPath]) => {
+          const dest = path.join(destination, baseName).replace(/\\/g, '/');
+          console.log(`Uploading ${absPath} => ${dest}`);
           const promise = new Promise<void>((res, rej) => {
-            _uploadFile(src, dest, sftp)
+            _uploadFile(absPath, dest, sftp)
               .then(() => res())
               .catch((e) => {
-                console.error(src);
+                console.error(absPath);
+                console.error(e);
                 rej(e);
               });
           });
@@ -166,9 +173,9 @@ export function getMakeDirs(fileMap: FileMapEntry, destination?: string): false 
   }, []);
   return subdirs;
 }
-export function getDirMap(files: string[]): FileMapEntry {
+export function getDirMap(files: Record<string, string>): FileMapEntry {
   let fileMap: FileMapEntry = {};
-  files.map((file) => {
+  Object.keys(files).map((file) => {
     const leaf = getFileMap(file);
     fileMap = deepmerge(fileMap, leaf);
   });
@@ -184,4 +191,43 @@ function getFileMap(file: string): FileMapEntry {
     const fileMapEntry = getFileMap(aFile);
     return { [parts[0]]: fileMapEntry };
   }
+}
+export function getSshConfig(ssh_server: string, options: any): SshConfig {
+  if(options.dotenv){
+    const theEnv = getEnvironment(options.dotenv);
+    initEnvironment(theEnv);
+  }
+  const userAndSshUrl = ssh_server.split("@");
+  if(userAndSshUrl.length==1) throw new Error("ssh_server address must specify username, e.g. root@example.com");
+  const username = userAndSshUrl[0];
+  const hostParts = userAndSshUrl[1].split(":");
+  const host = hostParts[0];
+  const sPort = safeIndex(hostParts, 1) || 22;
+  const port = Number(sPort);
+  const conConfig: Pick<ConnectConfig, "host"|"port"|"username"> = { host, port, username };
+  const uzduKeyPath = options.targetKeyPath || process.env.UZDU_SSH_KEY_PATH;
+  const uzduKey = options.targetKey || process.env.UZDU_SSH_KEY;
+  const uzduPassword = options.targetPassword || process.env.UZDU_SSH_PASSWORD;
+  let password: string | undefined = undefined;
+  let privateKey: Buffer | string | undefined = uzduKey;
+  if(!privateKey){
+    if(uzduKeyPath){
+      const resolvedKeyPath = resolvePath(options.targetKey);
+      try {
+        privateKey = fs.readFileSync( resolvedKeyPath );
+      } catch (e) {
+        throw new Error(`Not found private Key file ${resolvedKeyPath}`);
+      }
+    } else {
+      if(!uzduPassword) throw new Error("Either --targetPassword, --targetKeyPath or --targetKey should be specified");
+      password = uzduPassword;
+    }
+  }
+  const authConfig: SshConfig = password ? {
+    password: password as string,
+  } : {
+    privateKey: privateKey as Buffer | string
+  };
+  const sshConfig: SshConfig = { ...conConfig, ...authConfig };
+  return sshConfig;
 }
