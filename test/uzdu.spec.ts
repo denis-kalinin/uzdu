@@ -3,9 +3,10 @@ import { Command } from "commander";
 import { getDirMap, getMakeDirs, upload } from "../src/ssh";
 import { getEnvironment, initEnvironment, listFiles, resolvePath } from "../src/utils";
 
-
-const theEnv = getEnvironment();
-initEnvironment(theEnv);
+try {
+  const theEnv = getEnvironment();
+  initEnvironment(theEnv);
+} catch {}
 
 describe.skip("Direct", () => {
   it("... wihtout attachments", () => {
