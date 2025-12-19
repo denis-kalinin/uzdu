@@ -278,6 +278,20 @@ export function getRemoteDestination(sftpUrl: string): string {
   if(!execArray) throw new Error("Wrong sftp URL");
   if(!execArray.groups) throw new Error("Wrong URL: path is not specified");
   const path = execArray.groups.path;
-  const destination = path.replace(/\/+$/, "").replace(/^~/, ".");
+  const re = /^(?<first>[^\/]+)(?:\/)?(?<second>.*)?/g;
+  re.lastIndex = 0;
+  const execPathArray = re.exec(path);
+  const { groups } = execPathArray ?? {};
+  const first = groups?.first;
+  const second = groups?.second;
+  let dest;
+  if(first){
+    const execTild = /^(?<tild>~)/.exec(first);
+    const { groups } = execTild ?? {};
+    dest = groups?.tild ? `./${second}` : `/${first}${second ? `/${second}` : ""}`;
+  } else {
+    dest = path;
+  }
+  const destination = dest.replace(/\/+$/, "");
   return destination;
 }

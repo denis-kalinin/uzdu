@@ -42,8 +42,8 @@ describe.skip("CLI", () => {
   });
 });
 
-describe.skip("Utils", () => {
-  it("file map", async () => {
+describe("Utils", () => {
+  it.skip("file map", async () => {
     const plainFiles = [
       "/opt/youroute.app/api-server/web.xml","/opt/youroute.app/api-server/a.js",
     ];
@@ -53,6 +53,36 @@ describe.skip("Utils", () => {
     console.info(JSON.stringify(fileMap));
     const dirs = getMakeDirs(fileMap, "/opt/youroute.app/");
     if(dirs) dirs.map((dir) => consola.log(dir));
+  });
+  it.skip("alter destination", () => {
+    const re = /^(?<first>[^~\/]+)(?:\/)?(?<second>.*)?/g
+    const path1 = "";
+    re.lastIndex = 0;
+    const execArray = re.exec(path1);
+    const { groups } = execArray ?? {};
+    const first = groups?.first ? `/${groups?.first}` : path1;
+    const dest1 = `${first}${ groups?.second ? `/${groups.second}` : ""}`;
+    const dest = dest1.replace(/\/+$/, "");
+    console.log(dest);
+  });
+  it.skip("add slash", () => {
+    const re = /^(?<first>[^\/]+)(?:\/)?(?<second>.*)?/g;
+    const path = "~/opt/test/testt/test.tx/";
+    re.lastIndex = 0;
+    const execArray = re.exec(path);
+    const { groups } = execArray ?? {};
+    const first = groups?.first;
+    const second = groups?.second;
+    let dest;
+    if(first){
+      const execTild = /^(?<tild>~)/.exec(first);
+      const { groups } = execTild ?? {};
+      dest = groups?.tild ? `./${second}` : `/${first}${second ? `/${second}` : ""}`;
+    } else {
+      dest = path;
+    }
+    const destination = dest.replace(/\/+$/, "");
+    console.log(destination);    
   });
 });
 
