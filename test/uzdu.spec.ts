@@ -55,8 +55,10 @@ describe.skip("Utils", () => {
   });
 });
 
+const itIf = (condition: boolean) => (condition ? it : it.skip);
 describe("SSH", () => {
-  it("upload", async () => {
+  const testSsh = process.env.UZDU_TEST_SSH ? true : false;
+  itIf(testSsh)('upload', async () => {
     const sftpUrl = process.env.UZDU_TEST_SSH;
     if(!sftpUrl) throw new Error("Undefined environment variable UZDU_TEST_SSH");
     const from = resolvePath("./test/web");
