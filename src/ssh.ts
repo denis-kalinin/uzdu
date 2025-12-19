@@ -4,27 +4,31 @@ import path from "path";
 import { getEnvironment, initEnvironment, listFiles, resolvePath, safeIndex } from "./utils";
 import deepmerge from "deepmerge";
 
-export type SshConfig = ConnectConfig & { password: string; privateKey?: undefined } | { password?: undefined ; privateKey: Buffer | string };
+export type SshCredentials = { password: string; privateKey?: undefined } | { password?: undefined ; privateKey: Buffer | string };
 
-export async function upload(source: string, sftpUrlPath: string, sshConfig: SshConfig) {
+export async function upload(source: string, sftpUrl: string, sshCredentials?: SshCredentials ) {
   await new Promise<void>((resolve, reject) => {
     fs.stat(source, async (err, stats) => {
       if(stats.isSymbolicLink()){
         reject(new Error(`${source} is symlink`));
       } else {
-        const sshConnection = await connect(sshConfig);
-        try{
+        let sshConnection;
+        try {
+          const _connectConfig = getConnectConfig(sftpUrl);
+          const _sshCredentials = sshCredentials || getCredentials();
+          const connectConfig: ConnectConfig = { ..._connectConfig, ..._sshCredentials};
+          sshConnection = await connect(connectConfig);
           const files = await listFiles(source);
-          const _destination = sftpUrlPath.replace(/\/+$/, "").replace(/^~/, ".");
+          const destination = getRemoteDestination(sftpUrl);
           const _source = source.replace(/\/+$/, "");
-          await mkdirs(sshConnection, _destination, files);
-          await uploadFiles(files, _source, _destination, sshConnection);
+          await mkdirs(sshConnection, destination, files);
+          await uploadFiles(files, _source, destination, sshConnection);
           resolve();
         } catch (e) {
           console.error("SFTP error", e);
           reject(e);
         } finally {
-          sshConnection.destroy();
+          sshConnection?.destroy();
         }
       }
     });
@@ -86,7 +90,7 @@ function uploadFiles(sourceFiles: Record<string, string>, source: string, destin
           if(lstat.isFile()){
             const dest = path.join(destination, sourceFiles[0]).replace(/\\/g, '/');
             const src = source;
-            console.log(`Uploading file ${src} => ${dest}`);
+            //console.trace(`Uploading file ${src} => ${dest}`);
             await _uploadFile(src, dest, sftp)
               .then(() => resolve())
               .catch((e) => {
@@ -97,16 +101,16 @@ function uploadFiles(sourceFiles: Record<string, string>, source: string, destin
           }
         }
         let sourceDir = source;
-        console.info("sourcing directory", sourceDir);
+        //console.info("sourcing directory", sourceDir);
         const lstat = fs.lstatSync(source);
         if(lstat.isSymbolicLink()){
           sourceDir = fs.readlinkSync(source);
-          console.info(`${source} ==> ${sourceDir}`);
+          //console.info(`${source} ==> ${sourceDir}`);
         }
         const promises: Promise<void>[] = [];
         Object.entries(sourceFiles).map(([baseName, absPath]) => {
           const dest = path.join(destination, baseName).replace(/\\/g, '/');
-          console.log(`Uploading ${absPath} => ${dest}`);
+          //console.trace(`Uploading ${absPath} => ${dest}`);
           const promise = new Promise<void>((res, rej) => {
             _uploadFile(absPath, dest, sftp)
               .then(() => res())
@@ -125,7 +129,7 @@ function uploadFiles(sourceFiles: Record<string, string>, source: string, destin
   });
 }
 
-async function connect(sshConfig: SshConfig){
+async function connect(sshConfig: ConnectConfig){
   const conn = new Client();
   try {
     return await new Promise<Client>((resolve, reject) => {
@@ -137,7 +141,7 @@ async function connect(sshConfig: SshConfig){
           resolve(conn);
         })
         .connect({
-          timeout: 99,
+          timeout: 5,
           port: 22,
           algorithms: {
             cipher: [
@@ -192,42 +196,88 @@ function getFileMap(file: string): FileMapEntry {
     return { [parts[0]]: fileMapEntry };
   }
 }
-export function getSshConfig(ssh_server: string, options: any): SshConfig {
-  if(options.dotenv){
+/**
+ * 
+ * @param options 
+ * @returns 
+ */
+export function getCredentials(options?: { privateKeyPath?: string, dotenv?: string }) {
+  if(options?.dotenv){
     const theEnv = getEnvironment(options.dotenv);
     initEnvironment(theEnv);
   }
-  const userAndSshUrl = ssh_server.split("@");
-  if(userAndSshUrl.length==1) throw new Error("ssh_server address must specify username, e.g. root@example.com");
-  const username = userAndSshUrl[0];
-  const hostParts = userAndSshUrl[1].split(":");
-  const host = hostParts[0];
-  const sPort = safeIndex(hostParts, 1) || 22;
-  const port = Number(sPort);
-  const conConfig: Pick<ConnectConfig, "host"|"port"|"username"> = { host, port, username };
-  const uzduKeyPath = options.targetKeyPath || process.env.UZDU_SSH_KEY_PATH;
-  const uzduKey = options.targetKey || process.env.UZDU_SSH_KEY;
-  const uzduPassword = options.targetPassword || process.env.UZDU_SSH_PASSWORD;
+  const uzduKey = process.env.UZDU_SSH_KEY;
   let password: string | undefined = undefined;
   let privateKey: Buffer | string | undefined = uzduKey;
   if(!privateKey){
+    const uzduKeyPath = options?.privateKeyPath || process.env.UZDU_SSH_KEY_PATH;
     if(uzduKeyPath){
-      const resolvedKeyPath = resolvePath(options.targetKey);
+      const resolvedKeyPath = resolvePath(uzduKeyPath);
       try {
         privateKey = fs.readFileSync( resolvedKeyPath );
       } catch (e) {
         throw new Error(`Not found private Key file ${resolvedKeyPath}`);
       }
     } else {
-      if(!uzduPassword) throw new Error("Either --targetPassword, --targetKeyPath or --targetKey should be specified");
+      const uzduPassword = process.env.UZDU_SSH_PASSWORD;
+      if(!uzduPassword) throw new Error("Specify either --privateKeyPath or password in SFTP URL. Otherwise consider using --dotenv and one of environment variables: UZDU_SSH_KEY_PATH, UZDU_SSH_KEY, UZDU_SSH_PASSWORD");
       password = uzduPassword;
     }
   }
-  const authConfig: SshConfig = password ? {
+  const authConfig = password ? {
     password: password as string,
   } : {
     privateKey: privateKey as Buffer | string
   };
-  const sshConfig: SshConfig = { ...conConfig, ...authConfig };
-  return sshConfig;
+  return authConfig;
+}
+//const regexPattern = "^sftp:\\/\\/(?:(?<username>[\\w\\.\\-]{1,32})(?::(?<password>.+))?@)?(?:(?<host>[\\w\\.\\-]+)|\\[(?<ipv6>[\\d:]+)\\])(?::(?<port>\\d{1,5}))?\\/(?<path>.*)$";
+const sftpUrlRegex = /^sftp:\/\/(?:(?<username>[\w\.\-]{1,32})(?::(?<password>.+))?@)?(?:(?<host>[\w\.\-]+)|\[(?<ipv6>[\d:]+)\])(?::(?<port>\d{1,5}))?\/(?<path>.*)$/g;
+/**
+ * Get SSH ConnectionConfig from sftp URL.
+ * The general format for the URL is:
+ * `sftp://[user[:password]@]host[:port]/path/to/file`
+ * 
+ * Examples:
+ * ```
+ * sftp://ubuntu:pa55w0rd@example.com/opt/file
+ * sftp://root@[2001:db8::5]:222/opt/file
+ * sftp://203.0.113.5/opt/file
+ * ```
+ * @param sftpUrl
+ * 
+ * @throws Wrong URL: host or ivp6 is not specified
+ */
+export function getConnectConfig(sftpUrl: string): ConnectConfig {
+  //const regex = new RegExp(regexPattern, "g");
+  //const execArray = regex.exec(sftpUrl);
+  sftpUrlRegex.lastIndex = 0;
+  const execArray = sftpUrlRegex.exec(sftpUrl);
+  const { groups } = execArray ?? {};
+  const host = groups?.host || groups?.ipv6;
+  if(!host) throw new Error(`Wrong URL "${sftpUrl}": host or ivp6 is not specified`);
+  const username = groups?.username;
+  const password = groups?.password;
+  const _port = parseInt(groups.port)
+  const port = isNaN(_port) ? undefined : _port;
+  const connectConfig = { username, password, host, port };
+  return connectConfig;
+}
+/**
+ * 
+ * @param sftpUrl 
+ * @returns path on remote ssh server
+ * @throws Wrong sfpt URL
+ * @throws Wrong URL: path is not specified
+ */
+export function getRemoteDestination(sftpUrl: string): string {
+  //const regex = new RegExp(regexPattern, "g");
+  //const execArray = regex.exec(sftpUrl);
+  sftpUrlRegex.lastIndex = 0;
+  const execArray = sftpUrlRegex.exec(sftpUrl);
+  if(!execArray) throw new Error("Wrong sftp URL");
+  if(!execArray.groups) throw new Error("Wrong URL: path is not specified");
+  const path = execArray.groups.path;
+  const destination = path.replace(/\/+$/, "").replace(/^~/, ".");
+  return destination;
 }

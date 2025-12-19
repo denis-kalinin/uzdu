@@ -1,8 +1,11 @@
 import { consola } from "consola";
 import { Command } from "commander";
-import { getDirMap, getMakeDirs, getSshConfig, upload } from "../src/ssh";
+import { getDirMap, getMakeDirs, upload } from "../src/ssh";
 import { getEnvironment, initEnvironment, listFiles, resolvePath } from "../src/utils";
 
+
+const theEnv = getEnvironment();
+initEnvironment(theEnv);
 
 describe.skip("Direct", () => {
   it("... wihtout attachments", () => {
@@ -52,16 +55,11 @@ describe.skip("Utils", () => {
   });
 });
 
-describe.skip("SSH", () => {
+describe("SSH", () => {
   it("upload", async () => {
-    const theEnv = getEnvironment();
-    initEnvironment(theEnv);
-    const ssh_server = process.env.SSH_TARGET;
-    if(!ssh_server) throw new Error("Undefined environment variable SSH_TARGET");
-    const sshConfig = getSshConfig(ssh_server, {});
-    consola.info(sshConfig);
+    const sftpUrl = process.env.UZDU_TEST_SSH;
+    if(!sftpUrl) throw new Error("Undefined environment variable UZDU_TEST_SSH");
     const from = resolvePath("./test/web");
-    consola.info("From", from);
-    await upload(from, "~/test-keenrouter", sshConfig );
-  });
+    await upload(from, sftpUrl);
+  }, 7000);
 });

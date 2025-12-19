@@ -3,7 +3,7 @@ import { getEnvironment, initEnvironment, outputConfiguration, resolvePath, safe
 import azUpload, { AzureStorageOptions } from "./azure";
 import s3Upload, { S3Config } from "./s3";
 import { upload as httpUpload}  from "./http";
-import { getSshConfig, SshConfig, upload as sshUpload } from "./ssh";
+import { getCredentials, upload as sshUpload } from "./ssh";
 import { ConnectConfig } from "ssh2";
 import fs from "fs";
 
@@ -101,20 +101,17 @@ command.command("azure")
   });
 
 command.command("ssh")
-  .description("upload with SSH")
+  .description("upload via SFTP. In addition to sftpURL consider using environment variables UZDU_SSH_KEY_PATH, UZDU_SSH_KEY, UZDU_SSH_PASSWORD")
   .argument("<source>", "source directory or file to upload into <ssh_server>")
-  .argument("<ssh_server>", "username and server hostname/ip-address and optional SSH-port - username@hostname[:port], e.g. root@10.100.0.1:22")
-  .argument("<destination>", "desitnation directory or file")
+  .argument("<sftpUrl>", "the URL format: sftp://[user[:password]@]host[:port]/path/to/file")
   .addOption(
     new Option("-d|--dotenv [file]", "load environment variables from a property file, i.e. a file with \"key=value\" lines.")
     .preset(".env"))
-  .addOption(new Option("--targetKeyPath [targetKeyPath]", "Path to SSH private key, fallback is UZDU_SSH_KEY_PATH environment variable"))
-  .addOption(new Option("--targetKey [targetKey]", "SSH pirvate key, fallback is UZDU_SSH_KEY environment variable"))
-  .addOption(new Option("--targetPassword [targetPassword]", "SSH password, fallback is UZDU_SSH_PASSWORD environment variable"))
-  .action(async (source: string, ssh_server:string, destination: string, options: any, thisCommand: Command) => {
+  .addOption(new Option("--privateKeyPath [path to file]", "Path to SSH private key, fallback is UZDU_SSH_KEY_PATH environment variable. Also consider using UZDU_SSH_KEY to provide SSH private key content or UZDU_SSH_PASSWORD."))
+  .action(async (source: string, sftpUrl: string, options: any, thisCommand: Command) => {
     try {
-      const sshConfig = getSshConfig(ssh_server, options);
-      await sshUpload(resolvePath(source), destination, sshConfig);
+      const sshCredentials = getCredentials(options);
+      await sshUpload(resolvePath(source), sftpUrl, sshCredentials);
     } catch (e) {
       console.error(e);
       thisCommand.error((e as Error).message || e as string, { exitCode: 127, code: "ssh.upload.error" });
