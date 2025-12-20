@@ -88,7 +88,7 @@ function uploadFiles(sourceFiles: Record<string, string>, source: string, destin
         if(Object.keys(sourceFiles).length == 1){
           const lstat = fs.lstatSync(source);
           if(lstat.isFile()){
-            const dest = path.join(destination, sourceFiles[0]).replace(/\\/g, '/');
+            const dest = path.join(destination, Object.keys(sourceFiles)[0]).replace(/\\/g, '/');
             const src = source;
             //console.trace(`Uploading file ${src} => ${dest}`);
             await _uploadFile(src, dest, sftp)
@@ -288,7 +288,7 @@ export function getRemoteDestination(sftpUrl: string): string {
   if(first){
     const execTild = /^(?<tild>~)/.exec(first);
     const { groups } = execTild ?? {};
-    dest = groups?.tild ? `./${second}` : `/${first}${second ? `/${second}` : ""}`;
+    dest = groups?.tild ? `${second}` : `/${first}${second ? `/${second}` : ""}`;
   } else {
     dest = path;
   }

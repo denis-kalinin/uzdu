@@ -92,7 +92,7 @@ describe("SSH", () => {
   itIf(testSsh)('upload', async () => {
     const sftpUrl = process.env.UZDU_TEST_SSH;
     if(!sftpUrl) throw new Error("Undefined environment variable UZDU_TEST_SSH");
-    const from = resolvePath("./test/web");
+    const from = resolvePath("./test/web/index.html");
     await upload(from, sftpUrl);
   }, 7000);
 });
