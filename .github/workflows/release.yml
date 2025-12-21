@@ -23,8 +23,6 @@ jobs:
     if: github.ref == 'refs/heads/main'
     container:
       image: skipero/node-cli:24
-      volumes:
-      - test-results:/tmp/test
       #options: --entrypoint /usr/sbin/sshd
     #if: github.ref == 'refs/heads/dev' && (startsWith(github.event.head_commit.message, 'release ') || startsWith(github.event.head_commit.message, 'rc ') )
     #if: github.base_ref == 'dev' && (startsWith(github.event.head_commit.message, 'release ') || startsWith(github.event.head_commit.message, 'rc ') )
@@ -36,8 +34,6 @@ jobs:
 
     
     steps:
-      - name: create test-results directory
-        run: mkdir -p -m 777 test-results
       - name: start SSH
       #  run:  docker exec ${{ job.services.dockerssh.id }} sh -c '/usr/sbin/sshd'
         run: /usr/sbin/sshd
@@ -69,8 +65,8 @@ jobs:
       #- run: git rev-parse --git-dir .
       #- run: npm run release
       #- run: npm i -g @semantic-release/exec@7.1.0
-      - name: List files in ${{ github.workspace }}/test-results
-        run: ls -la ${{ github.workspace }}/test-results
+      - name: List files in /tmp/test
+        run: ls -la /tmp/test
       - name: Publish with local netkos/act
         if: ${{ success() && env.ACT }} ## gh act -j release --secret-file .env ## env.ACT
         run: npx -y --package semantic-release@25 --package @semantic-release/exec@7 -- semantic-release --no-ci --dry-run
