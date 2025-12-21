@@ -31,6 +31,8 @@ jobs:
 
     
     steps:
+      - name: start SSH
+        run:  docker exec ${{ job.services.docker-ssh.id }} sh -c '/usr/sbin/sshd'
       - name: Checkout source code
         uses: actions/checkout@v5
         with:
@@ -47,6 +49,14 @@ jobs:
         env:
           UZDU_TEST_SSH: sftp://admin:admin@docker-ssh/~/test/
           UZDU_TEST_S3: uzdu:ru-central1-d:http://storage.yandexcloud.net
+          UZDU_SSH_KEY: |
+            -----BEGIN OPENSSH PRIVATE KEY-----
+            b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+            QyNTUxOQAAACDhgNM1IaxFyzmf4gSAG5maGyvy9l3e/jVvx6DbNvR8zQAAAJD5BsR5+QbE
+            eQAAAAtzc2gtZWQyNTUxOQAAACDhgNM1IaxFyzmf4gSAG5maGyvy9l3e/jVvx6DbNvR8zQ
+            AAAEBA8p6k7aRpYrihJ7Wr+iiYA1t/+meoijF69lYuCGCjAeGA0zUhrEXLOZ/iBIAbmZob
+            K/L2Xd7+NW/HoNs29HzNAAAADURlbmlzIEthbGluaW4=
+            -----END OPENSSH PRIVATE KEY-----
       - run: git config --global --add safe.directory '*'
       #- run: git rev-parse --git-dir .
       #- run: npm run release
