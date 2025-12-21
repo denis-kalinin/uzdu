@@ -30,7 +30,7 @@ jobs:
     services:
       testssh:
         image: skipero/node-cli:24
-        options: --entrypoint /usr/sbin/sshd --name testssh
+        options: '--name testssh2'
 
     
     steps:
