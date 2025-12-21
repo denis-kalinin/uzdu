@@ -61,14 +61,17 @@ jobs:
             AAAEBA8p6k7aRpYrihJ7Wr+iiYA1t/+meoijF69lYuCGCjAeGA0zUhrEXLOZ/iBIAbmZob
             K/L2Xd7+NW/HoNs29HzNAAAADURlbmlzIEthbGluaW4=
             -----END OPENSSH PRIVATE KEY-----
-      - run: git config --global --add safe.directory '*'
       #- run: git rev-parse --git-dir .
       #- run: npm run release
       #- run: npm i -g @semantic-release/exec@7.1.0
-      - name: List files in /tmp/test
-        run: ls -la /tmp/test
+      - name: Check SSH upload
+        if: success()
+        run:  test -e /tmp/test
+      - run: git config --global --add safe.directory '*'
+        if: success()
       - name: Publish with local netkos/act
-        if: ${{ success() && env.ACT }} ## gh act -j release --secret-file .env ## env.ACT
+        if: ${{ success() && env.ACT }}
+        ## gh act -j release --secret-file .env ## env.ACT
         run: npx -y --package semantic-release@25 --package @semantic-release/exec@7 -- semantic-release --no-ci --dry-run
         #uses: cycjimmy/semantic-release-action@v6
         #with:
