@@ -6,16 +6,20 @@ import deepmerge from "deepmerge";
 
 export type SshCredentials = { password: string; privateKey?: undefined } | { password?: undefined ; privateKey: Buffer | string };
 
-export async function upload(source: string, sftpUrl: string, sshCredentials?: SshCredentials ) {
+export async function upload(source: string, sftpUrl: string, options?: { privateKeyPath?: string, dotenv?: string } ) {
   await new Promise<void>((resolve, reject) => {
     fs.stat(source, async (err, stats) => {
+      if(err) {
+        reject(err);
+        return;
+      }
       if(stats.isSymbolicLink()){
         reject(new Error(`${source} is symlink`));
       } else {
         let sshConnection;
         try {
           const _connectConfig = getConnectConfig(sftpUrl);
-          const _sshCredentials = sshCredentials || getCredentials();
+          const _sshCredentials = _connectConfig.password ? undefined : getCredentials(options);
           const connectConfig: ConnectConfig = { ..._connectConfig, ..._sshCredentials};
           sshConnection = await connect(connectConfig);
           const files = await listFiles(source);
@@ -25,7 +29,7 @@ export async function upload(source: string, sftpUrl: string, sshCredentials?: S
           await uploadFiles(files, _source, destination, sshConnection);
           resolve();
         } catch (e) {
-          console.error("SFTP error", e);
+          //console.error("SFTP error", e);
           reject(e);
         } finally {
           sshConnection?.destroy();
@@ -220,7 +224,7 @@ export function getCredentials(options?: { privateKeyPath?: string, dotenv?: str
       }
     } else {
       const uzduPassword = process.env.UZDU_SSH_PASSWORD;
-      if(!uzduPassword) throw new Error("Specify either --privateKeyPath or password in SFTP URL. Otherwise consider using --dotenv and one of environment variables: UZDU_SSH_KEY_PATH, UZDU_SSH_KEY, UZDU_SSH_PASSWORD");
+      if(!uzduPassword) throw new Error("Specify password in SFTP URL. Otherwise consider using one of environment variables: UZDU_SSH_KEY_PATH, UZDU_SSH_KEY, UZDU_SSH_PASSWORD");
       password = uzduPassword;
     }
   }

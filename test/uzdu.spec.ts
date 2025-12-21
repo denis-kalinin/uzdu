@@ -1,7 +1,8 @@
 import { consola } from "consola";
 import { Command } from "commander";
-import { getDirMap, getMakeDirs, upload } from "../src/ssh";
-import { getEnvironment, initEnvironment, listFiles, resolvePath } from "../src/utils";
+import * as ssh from "../src/ssh";
+import s3upload, { S3Config } from "../src/s3";
+import { getEnvironment, initEnvironment, listFiles, resolvePath, shouldBeDirectory } from "../src/utils";
 
 try {
   const theEnv = getEnvironment();
@@ -49,9 +50,9 @@ describe("Utils", () => {
     ];
     const from = resolvePath("./test/web");
     const files = await listFiles(from);
-    const fileMap = getDirMap(files);
+    const fileMap = ssh.getDirMap(files);
     console.info(JSON.stringify(fileMap));
-    const dirs = getMakeDirs(fileMap, "/opt/youroute.app/");
+    const dirs = ssh.getMakeDirs(fileMap, "/opt/youroute.app/");
     if(dirs) dirs.map((dir) => consola.log(dir));
   });
   it.skip("alter destination", () => {
@@ -93,6 +94,29 @@ describe("SSH", () => {
     const sftpUrl = process.env.UZDU_TEST_SSH;
     if(!sftpUrl) throw new Error("Undefined environment variable UZDU_TEST_SSH");
     const from = resolvePath("./test/web/index.html");
-    await upload(from, sftpUrl);
+    await ssh.upload(from, sftpUrl);
+  }, 7000);
+});
+describe.skip("S3", () => {
+  const testS3 = process.env.UZDU_TEST_S3 ? true : false;
+  itIf(testS3)('upload', async () => {
+    const bucket = process.env.UZDU_TEST_S3;
+    if(!bucket) throw new Error("Undefined environment variable UZDU_TEST_S3");
+    const from = resolvePath("./test/web");
+    shouldBeDirectory(from);
+    const env: Partial<S3Config> = {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      region: process.env.AWS_REGION
+    };
+    const [bucketName, region, ...rest] = bucket.split(":")
+    const endpoint = (rest.length > 0) ? rest.join(":").trim() : undefined;
+    const optConfig: Partial<S3Config> = { bucket: bucketName, endpoint, };
+    if(region) optConfig.region = region;
+    const config = Object.assign(env, optConfig) as S3Config;
+    if(!config.accessKeyId) throw new Error("AWS Access Key ID is not specified. Provide an environement variable S3_ACCESS_KEY_ID.");
+    if(!config.secretAccessKey) throw new Error("AWS Secret Key is not specified. Provide an environment variable S3_SECRET_ACCESS_KEY.");
+    if(!config.region) throw new Error("AWS region is not specified. Provide it in a bucket address or as an envronment variable S3_REGION.");
+    await s3upload(from, config);
   }, 7000);
 });

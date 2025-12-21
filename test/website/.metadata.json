@@ -5,6 +5,12 @@
       "CacheControl": "no-cache"
     }
   },
+  "appsource/icons": {
+    "key": "appsource/icons",
+    "headers": {
+      "CacheControl": "no-cache"
+    }
+  },
   "appsource/index.html": {
     "key": "appsource/index.html",
     "headers": {

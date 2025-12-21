@@ -11,8 +11,8 @@
   "scripts": {
     "build": "tsup-node",
     "test:help": "tsx src/uzdu.ts help",
-    "test:s3": "npm run test:metadata && tsx src/uzdu.ts -d --aws my-bucket test/web",
-    "test:ssh": "tsx src/uzdu.ts upload ssh --target my.example.com:22 --targetKey ~/.ssh/id_ed25519 test/web /opt/youroute.app/web/",
+    "test:s3": "npm run test:metadata && tsx src/uzdu.ts upload aws -d -- test/web uzdu:ru-central1-d:http://storage.yandexcloud.net",
+    "test:ssh": "tsx src/uzdu.ts upload ssh test/web /opt/youroute.app/web/",
     "test:azure": "npm run test:metadata && tsx src/uzdu.ts upload azure -d --azure -- test/web",
     "test:http:upload": "tsx src/uzdu.ts upload http --dotenv --header \"Authorization: Basic TOKEN=\" website.zip https://nexus/repository/private-raw/dist/test-upload/website.zip",
     "test:http:download": "tsx src/uzdu.ts download http --dotenv --header \"Authorization: Basic TOKEN=\" https://nexus/repository/private-raw/dist/test-upload/website.zip website.zip",

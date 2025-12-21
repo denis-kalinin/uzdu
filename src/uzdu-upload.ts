@@ -110,10 +110,9 @@ command.command("ssh")
   .addOption(new Option("--privateKeyPath [path to file]", "Path to SSH private key, fallback is UZDU_SSH_KEY_PATH environment variable. Also consider using UZDU_SSH_KEY to provide SSH private key content or UZDU_SSH_PASSWORD."))
   .action(async (source: string, sftpUrl: string, options: any, thisCommand: Command) => {
     try {
-      const sshCredentials = getCredentials(options);
-      await sshUpload(resolvePath(source), sftpUrl, sshCredentials);
+      await sshUpload(resolvePath(source), sftpUrl, options);
     } catch (e) {
-      console.error(e);
+      //console.error(e);
       thisCommand.error((e as Error).message || e as string, { exitCode: 127, code: "ssh.upload.error" });
     }
   });
