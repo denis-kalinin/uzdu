@@ -36,6 +36,8 @@ jobs:
 
     
     steps:
+      - name: create test-results directory
+        run: mkdir -p -m 777 test-results
       - name: start SSH
       #  run:  docker exec ${{ job.services.dockerssh.id }} sh -c '/usr/sbin/sshd'
         run: /usr/sbin/sshd
@@ -70,7 +72,7 @@ jobs:
       - name: List files in ${{ github.workspace }}/test-results
         run: ls -la ${{ github.workspace }}/test-results
       - name: Publish with local netkos/act
-        if: ${{ env.ACT }} ## gh act -j release --secret-file .env ## env.ACT
+        if: ${{ success() && env.ACT }} ## gh act -j release --secret-file .env ## env.ACT
         run: npx -y --package semantic-release@25 --package @semantic-release/exec@7 -- semantic-release --no-ci --dry-run
         #uses: cycjimmy/semantic-release-action@v6
         #with:
@@ -79,7 +81,7 @@ jobs:
         #  extra_plugins: |
         #    @semantic-release/exec@7.1.0
       - name: Publish on Github
-        if: ${{ !env.ACT }}
+        if: ${{ success() && !env.ACT }}
         run: npx -y --package semantic-release@25 --package @semantic-release/exec@7 -- semantic-release
         #env:
         #  GITHUB_TOKEN: secrets.GH_TOKEN
