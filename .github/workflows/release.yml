@@ -27,15 +27,16 @@ jobs:
     #if: github.ref == 'refs/heads/dev' && (startsWith(github.event.head_commit.message, 'release ') || startsWith(github.event.head_commit.message, 'rc ') )
     #if: github.base_ref == 'dev' && (startsWith(github.event.head_commit.message, 'release ') || startsWith(github.event.head_commit.message, 'rc ') )
     #if: startsWith(github.ref, 'refs/tags/') && github.base_ref == 'master' && contains(fromJSON('["release", "rc"]'), github.event.head_commit.message)
-    services:
-      testssh:
-        image: skipero/node-cli:24
-        options: '--name testssh2'
+    #services:
+    #  testssh:
+    #    image: skipero/node-cli:24
+    #    options: '--name testssh2'
 
     
     steps:
-      #- name: start SSH
+      - name: start SSH
       #  run:  docker exec ${{ job.services.dockerssh.id }} sh -c '/usr/sbin/sshd'
+        run: /usr/sbin/sshd
       - name: Checkout source code
         uses: actions/checkout@v5
         with:
