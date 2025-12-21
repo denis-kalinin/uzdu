@@ -24,7 +24,7 @@ jobs:
     container:
       image: skipero/node-cli:24
       volumes:
-      - ${{ github.workspace }}/test-results:/tmp/test
+      - ./test-results:/tmp/test
       #options: --entrypoint /usr/sbin/sshd
     #if: github.ref == 'refs/heads/dev' && (startsWith(github.event.head_commit.message, 'release ') || startsWith(github.event.head_commit.message, 'rc ') )
     #if: github.base_ref == 'dev' && (startsWith(github.event.head_commit.message, 'release ') || startsWith(github.event.head_commit.message, 'rc ') )
