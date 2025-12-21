@@ -13,6 +13,7 @@ permissions:
   pull-requests: write # to be able to comment on released pull requests
   id-token: write # to enable use of OIDC for trusted publishing and npm provenance
 jobs:
+
   release:
     #needs: build
     runs-on: ubuntu-latest
@@ -26,13 +27,14 @@ jobs:
     #if: github.base_ref == 'dev' && (startsWith(github.event.head_commit.message, 'release ') || startsWith(github.event.head_commit.message, 'rc ') )
     #if: startsWith(github.ref, 'refs/tags/') && github.base_ref == 'master' && contains(fromJSON('["release", "rc"]'), github.event.head_commit.message)
     services:
-      docker-ssh:
+      testssh:
         image: skipero/node-cli:24
+        options: --entrypoint /usr/sbin/sshd
 
     
     steps:
-      - name: start SSH
-        run:  docker exec ${{ job.services.docker-ssh.id }} sh -c '/usr/sbin/sshd'
+      #- name: start SSH
+      #  run:  docker exec ${{ job.services.dockerssh.id }} sh -c '/usr/sbin/sshd'
       - name: Checkout source code
         uses: actions/checkout@v5
         with:
@@ -47,7 +49,7 @@ jobs:
       - run: npm ci
       - run: npm test
         env:
-          UZDU_TEST_SSH: sftp://admin:admin@docker-ssh/~/test/
+          UZDU_TEST_SSH: sftp://admin:admin@testssh/~/test/
           UZDU_TEST_S3: uzdu:ru-central1-d:http://storage.yandexcloud.net
           UZDU_SSH_KEY: |
             -----BEGIN OPENSSH PRIVATE KEY-----
