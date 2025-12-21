@@ -23,6 +23,8 @@ jobs:
     if: github.ref == 'refs/heads/main'
     container:
       image: skipero/node-cli:24
+      volumes:
+      - ${{ github.workspace }}/test-results:/tmp/test
       #options: --entrypoint /usr/sbin/sshd
     #if: github.ref == 'refs/heads/dev' && (startsWith(github.event.head_commit.message, 'release ') || startsWith(github.event.head_commit.message, 'rc ') )
     #if: github.base_ref == 'dev' && (startsWith(github.event.head_commit.message, 'release ') || startsWith(github.event.head_commit.message, 'rc ') )
@@ -51,7 +53,7 @@ jobs:
       - run: npm ci
       - run: npm test
         env:
-          UZDU_TEST_SSH: sftp://admin:admin@localhost/~/test/
+          UZDU_TEST_SSH: sftp://admin:admin@localhost/tmp/test/
           UZDU_TEST_S3: uzdu:ru-central1-d:http://storage.yandexcloud.net
           UZDU_SSH_KEY: |
             -----BEGIN OPENSSH PRIVATE KEY-----
@@ -65,6 +67,8 @@ jobs:
       #- run: git rev-parse --git-dir .
       #- run: npm run release
       #- run: npm i -g @semantic-release/exec@7.1.0
+      - name: List files in ${{ github.workspace }}/test-results
+        run: ls -la ${{ github.workspace }}/test-results
       - name: Publish with local netkos/act
         if: ${{ env.ACT }} ## gh act -j release --secret-file .env ## env.ACT
         run: npx -y --package semantic-release@25 --package @semantic-release/exec@7 -- semantic-release --no-ci --dry-run

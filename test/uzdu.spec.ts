@@ -97,7 +97,7 @@ describe("SSH", () => {
     await ssh.upload(from, sftpUrl);
   }, 7000);
 });
-describe.skip("S3", () => {
+describe("S3", () => {
   const testS3 = process.env.UZDU_TEST_S3 ? true : false;
   itIf(testS3)('upload', async () => {
     const bucket = process.env.UZDU_TEST_S3;
