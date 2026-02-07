@@ -1,4 +1,5 @@
-[Git-flow](https://startracex.github.io/semantic-release/recipes/release-workflow/maintenance-releases.html)
+[Git Flow](https://startracex.github.io/semantic-release/recipes/release-workflow/maintenance-releases.html)
+[Push strategy](https://gist.github.com/muzakkirHussain/b484f32bd8c92c160d2659de4f5f1320)
 
 ## Main Branches
 - **main (or master) Branch:**
@@ -37,6 +38,8 @@
     - **Purpose:** For urgent fixes that need to go directly into production.
     - **Merging:** Merge into both main and develop once applied.
 
+![Visual Git Flow scheme](git-flow.png "Git flow scheme")
+
 ## Branch Workflow
 1. Feature Development:
     - Create a branch from develop using <code>feature/&lt;feature-name&gt;</code>.
@@ -54,6 +57,16 @@
     - Create a branch from develop using <code>release/&lt;version-number&gt;</code>.
     - Perform final testing, fix any last-minute bugs, and update documentation.
     - Merge the release branch into both main and develop once ready.
+  ```bash
+  $ git checkout develop
+  Switched to branch 'develop'
+  $ git merge --no-ff myfeature
+  Updating ea1b82a..05e9557
+  (Summary of changes)
+  $ git branch -d myfeature
+  Deleted branch myfeature (was 05e9557).
+  $ git push origin develop
+  ```
 
 4. Hotfixes:
     - Create a branch from main using <code>hotfix/&lt;issue-id&gt;</code>.

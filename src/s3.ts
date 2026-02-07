@@ -47,7 +47,13 @@ export default async function upload(dir: string, s3config: S3Config, metadataFi
   await Promise.all(Object.entries(files).map(async ([file, absFile]) => {
     //const filePath = path.resolve(dist, file);
     const filePath = absFile;
-    const fileContent = fs.readFileSync(filePath);
+    const fileContent = await new Promise<NonSharedBuffer>((resolve, reject) => {
+      fs.readFile(filePath, (err, data) => {
+        if(err) reject(err);
+        else resolve(data);
+      });
+    });
+    //const fileContentt = fs.readFileSync(filePath);
     const params: PutObjectCommandInput = {
       Bucket: s3config.bucket,
       Key: file,

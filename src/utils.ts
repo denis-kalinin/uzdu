@@ -316,3 +316,38 @@ function parseEnvironment (src: string) {
   }
   return obj
 }
+
+/**
+ * Sequential runner
+ * @param tasks array of functions to be executed sequentially
+ * @param breaksOnError breaks all if any function fails.
+ * @returns array of results
+ * @throws SequentialRunError
+ */
+export async function runSequentially(tasks: Function[], breaksOnError: boolean = true) {
+  const results = [];
+  for(let i = 0; i < tasks.length; i++) {
+    try {
+      const result = await tasks[i](); // Wait for each task before moving on
+      results.push(result);
+    } catch (err) {
+      if (breaksOnError) throw new SequentilRunError(i, `${(err as Error).message || err}`);
+      else {
+        console.error(`Error in #${i}: ${(err as Error).message || err}`);
+        results.push(null); // Keep array length consistent
+      }
+    }
+  };
+  return results;
+}
+
+export class SequentilRunError extends Error {
+  /**
+   * 
+   * @param message Text of the error
+   * @param index where in the sequense the error happened
+   */
+  constructor(readonly index: number, readonly message: string = "Sequential Error", ) {
+    super(message);
+  }
+}

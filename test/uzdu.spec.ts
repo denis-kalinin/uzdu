@@ -66,25 +66,6 @@ describe("Utils", () => {
     const dest = dest1.replace(/\/+$/, "");
     console.log(dest);
   });
-  it.skip("add slash", () => {
-    const re = /^(?<first>[^\/]+)(?:\/)?(?<second>.*)?/g;
-    const path = "~/opt/test/testt/test.tx/";
-    re.lastIndex = 0;
-    const execArray = re.exec(path);
-    const { groups } = execArray ?? {};
-    const first = groups?.first;
-    const second = groups?.second;
-    let dest;
-    if(first){
-      const execTild = /^(?<tild>~)/.exec(first);
-      const { groups } = execTild ?? {};
-      dest = groups?.tild ? `./${second}` : `/${first}${second ? `/${second}` : ""}`;
-    } else {
-      dest = path;
-    }
-    const destination = dest.replace(/\/+$/, "");
-    console.log(destination);    
-  });
 });
 
 const itIf = (condition: boolean) => (condition ? it : it.skip);
@@ -95,6 +76,13 @@ describe("SSH", () => {
     if(!sftpUrl) throw new Error("Undefined environment variable UZDU_TEST_SSH");
     const from = resolvePath("./test/web/index.html");
     await ssh.upload(from, sftpUrl);
+  }, 7000);
+  itIf(testSsh)('exec', async () => {
+    const sftpUrl = process.env.UZDU_TEST_SSH;
+    if(!sftpUrl) throw new Error("Undefined environment variable UZDU_TEST_SSH");
+    await ssh.execute(sftpUrl, ['echo "$(date): Hello world!"'], {
+      callback: (val) => { console.log("SSH execute output", val.message)}
+    });
   }, 7000);
 });
 describe("S3", () => {

@@ -36,6 +36,7 @@ program.command("unzip", "unzip archive to a directory");
 program.command("copy", "copy files and directories");
 program.command("metadata", "create Amazon S3 metadata file. See https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingMetadata.html.")
   .alias("meta")
+program.command("exec", "execute shell command")
   
 program.configureOutput(outputConfiguration);
 

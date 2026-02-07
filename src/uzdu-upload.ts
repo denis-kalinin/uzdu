@@ -87,7 +87,7 @@ command.command("azure")
       }
       const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
       if (!connectionString) {
-        throw new Error("AZURE_STORAGE_CONNECTION_STRING is absent in environment variables. Consider option --dotenv to laod it.");
+        throw new Error("AZURE_STORAGE_CONNECTION_STRING is absent in environment variables. Consider the command option --dotenv to load it from a file.");
       }
       shouldBeDirectory(from);
       const azOpt: AzureStorageOptions = {

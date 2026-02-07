@@ -1,0 +1,47 @@
+name: Pull Request flow
+on:
+  pull_request:
+    types:
+    - opened
+    - reopened
+    - synchronize
+    branches:
+    - main
+permissions:
+  issues: write # to be able to comment on released issues
+  pull-requests: write # to be able to comment on released pull requests
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://www.npmjs.com/package/uzdu
+    if: github.ref == 'refs/heads/main'
+    container:
+      image: skipero/neat-ci:latest
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v5
+      with:
+        #ref: ${{ github.ref }}
+        fetch-depth: 0
+    - name: Cache npm dependencies
+      uses: actions/cache@v4
+      with:
+        path: '~/.npm'
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        #restore-keys: |
+        #  ${{ runner.os }}-node-
+    - name: Npm Test
+      if: success()
+      run: |
+        npm ci
+        /usr/sbin/sshd
+        npm test
+      env:
+        UZDU_TEST_SSH: sftp://admin:admin@localhost/tmp/test/
+        UZDU_TEST_S3: uzdu:ru-central1-d:http://storage.yandexcloud.net
+    - name: Check SSH upload
+      if: success()
+      run:  test -e /tmp/test

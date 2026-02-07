@@ -29,19 +29,19 @@ bunx uzdu -h
 
 ### uploading
 
-- [Amazon S3](https://docs.aws.amazon.com/s3/) `npx uzdu upload aws -h`
-- [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs) `npx uzdu upload az -h`
-- [Nexus](https://support.sonatype.com/hc/en-us/articles/115006744008-Repository-How-can-I-programmatically-upload-files-into-Nexus-3#DirectUploadusingHTTPPUTtotheRepositoryPath) `npx uzdu upload http -h`
-- SSH/SCP `npx uzdu upload ssh -h`
+- [Amazon S3](https://docs.aws.amazon.com/s3/) `npx uzdu upload aws --dotenv /projects/environments/test.env -- build/index.html -- uzdu:ru-central1-d:http://storage.yandexcloud.net`
+- [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs) `AZURE_STORAGE_CONNECTION_STRING=...; npx uzdu upload azure build/ $web`
+- [Nexus](https://support.sonatype.com/hc/en-us/articles/115006744008-Repository-How-can-I-programmatically-upload-files-into-Nexus-3#DirectUploadusingHTTPPUTtotheRepositoryPath) `npx upload http --header "Authorization: Basic TOKEN=" -- website.zip https://nexus/repository/private-raw/dist/test-uzdu/website.zip",`
+- SSH/SFTP `npx uzdu upload ssh /projects/website/build/ sftp://root:password@example.localtest.me/var/www/html/`
 
 ### downloading
 
-- http `npx uzdu download http -h`
+- http `npx uzdu download http --dotenv --header \"Authorization: Basic TOKEN=\" https://nexus/repository/private-raw/dist/test-uzdu/website.zip website.zip`
 
 ### working with zip-archives
 
-- zip `npx uzdu zip -h`
-- unzip `npx uzdu unzip -h`
+- zip `npx uzdu zip build/ ./build.zip`
+- unzip `npx uzdu unzip /tmp/repo.zip ./src`
 
 
 ## For developers
