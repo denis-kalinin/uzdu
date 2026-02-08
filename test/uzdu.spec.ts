@@ -66,6 +66,17 @@ describe("Utils", () => {
     const dest = dest1.replace(/\/+$/, "");
     console.log(dest);
   });
+  it("Parsing URL sftp://admin@localhost/tmp/test/", () => {
+    const config = ssh.getConnectConfig("sftp://admin@localhost/tmp/test/");
+    expect(config.username).toBeDefined();
+    expect(config.host).toBeDefined();
+    expect(config.path).toBeDefined()
+  });
+  it("Parsing URL admin@localhost", () => {
+    const config = ssh.getConnectConfig("admin@localhost");
+    expect(config.username).toBeDefined();
+    expect(config.host).toBeDefined();
+  });
 });
 
 const itIf = (condition: boolean) => (condition ? it : it.skip);

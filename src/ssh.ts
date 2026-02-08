@@ -316,14 +316,17 @@ export function getConnectConfig(url: string): SftpConnectConfig {
   //const regex = new RegExp(regexPattern, "g");
   //const execArray = regex.exec(sftpUrl);
   let execArray:  RegExpExecArray | null;
+  sshUrlRegex.lastIndex = 0;
+  sftpUrlRegex.lastIndex = 0;
   if(sftpUrlRegex.test(url)){
     sftpUrlRegex.lastIndex = 0;
     execArray = sftpUrlRegex.exec(url);
   } else if(sshUrlRegex.test(url)){
+    sshUrlRegex.lastIndex = 0;
+    suspectSftpRegex.lastIndex = 0;
     if(suspectSftpRegex.test(url)){
       throw new Error(`SSH URL starts with \"sftp://\". If it is sftp URL, then add trailing slash after hostname[:port] - ${url}/, if it is SSH URL, consider password that does not start with 2 slashes.`);
     }
-    sshUrlRegex.lastIndex = 0;
     execArray = sshUrlRegex.exec(url);
   } else {
     throw new Error(`Not an SFTP or SSH address: ${url}`);
