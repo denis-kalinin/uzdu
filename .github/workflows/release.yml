@@ -45,8 +45,8 @@ jobs:
       - run: npm ci
       - run: npm test
         env:
-          UZDU_TEST_SSH: sftp://admin:admin@localhost/tmp/test/
-          UZDU_TEST_S3: uzdu:ru-central1-d:http://storage.yandexcloud.net
+          #UZDU_TEST_SSH: sftp://admin:admin@localhost/tmp/test/
+          UZDU_TEST_SSH: sftp://admin@localhost/tmp/test/
           UZDU_SSH_KEY: |
             -----BEGIN OPENSSH PRIVATE KEY-----
             b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
@@ -55,6 +55,9 @@ jobs:
             AAAEBA8p6k7aRpYrihJ7Wr+iiYA1t/+meoijF69lYuCGCjAeGA0zUhrEXLOZ/iBIAbmZob
             K/L2Xd7+NW/HoNs29HzNAAAADURlbmlzIEthbGluaW4=
             -----END OPENSSH PRIVATE KEY-----
+          UZDU_TEST_S3: ${{ vars.UZDU_TEST_S3 }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       #- run: git rev-parse --git-dir .
       #- run: npm run release
       #- run: npm i -g @semantic-release/exec@7.1.0

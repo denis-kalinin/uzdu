@@ -37,8 +37,8 @@ command.command("aws")
       const optConfig: Partial<S3Config> = { bucket: bucketName, endpoint, };
       if(region) optConfig.region = region;
       const config = Object.assign(env, optConfig) as S3Config;
-      if(!config.accessKeyId) throw new Error("AWS Access Key ID is not specified. Provide an environement variable S3_ACCESS_KEY_ID.");
-      if(!config.secretAccessKey) throw new Error("AWS Secret Key is not specified. Provide an environment variable S3_SECRET_ACCESS_KEY.");
+      if(!config.accessKeyId) throw new Error("AWS Access Key ID is not specified. Provide an environement variable AWS_ACCESS_KEY_ID.");
+      if(!config.secretAccessKey) throw new Error("AWS Secret Key is not specified. Provide an environment variable AWS_SECRET_ACCESS_KEY.");
       if(!config.region) throw new Error("AWS region is not specified. Provide it in a bucket address or as an envronment variable S3_REGION.");
       await s3Upload(from, config);
     } catch (e) {
