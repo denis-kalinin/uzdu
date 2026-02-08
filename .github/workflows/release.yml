@@ -45,8 +45,7 @@ jobs:
       - run: npm ci
       - run: npm test
         env:
-          #UZDU_TEST_SSH: sftp://admin:admin@localhost/tmp/test/
-          UZDU_TEST_SSH: sftp://admin@localhost/tmp/test/
+          UZDU_TEST_SSH: sftp://admin:admin@localhost/tmp/test/
           UZDU_SSH_KEY: |
             -----BEGIN OPENSSH PRIVATE KEY-----
             b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
