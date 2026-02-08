@@ -86,6 +86,7 @@ export default defineConfig({
     "src/uzdu-zip.ts",
     "src/uzdu-unzip.ts",
     "src/uzdu-copy.ts",
+    "src/uzdu-exec.ts",
   ],
   clean: true,
   //format: ["cjs"],
