@@ -1,7 +1,6 @@
 import { Argument, Command, Option } from "commander";
 import { execute, ShellCallbackParams } from "./ssh";
 import { outputConfiguration } from "./utils";
-import { consola } from "consola";
 
 const command = new Command();
 command
@@ -19,8 +18,8 @@ command.command("ssh")
   .action(async (sshUrl: string, command: string, options: any, thisCommand: Command) => {
     try {
       options.callback = (value: ShellCallbackParams) => {
-        if(value.message) consola.log(value.message);
-        if(value.error) consola.error(value.error);
+        if(value.message) console.log(value.message);
+        if(value.error) console.error(value.error);
       };
       await execute(sshUrl, [command],  options);
     } catch (e) {
