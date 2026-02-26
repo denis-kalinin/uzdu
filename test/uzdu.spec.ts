@@ -82,29 +82,16 @@ describe.skip("Utils", () => {
 
 const itIf = (condition: boolean) => (condition ? it : it.skip);
 describe("SSH", () => {
-  const testSsh = false;// process.env.UZDU_TEST_SSH ? true : false;
+  const sftpUrl = process.env.ACT ? "sftp://admin:admin@localhost/tmp/test/" : process.env.UZDU_TEST_SSH;
+  const testSsh = sftpUrl ? true : false;
   itIf(testSsh)('upload', async () => {
-    const sftpUrl = process.env.UZDU_TEST_SSH;
-    if(!sftpUrl) throw new Error("Undefined environment variable UZDU_TEST_SSH");
     const from = resolvePath("./test/web/index.html");
-    try{
-      await ssh.upload(from, sftpUrl);
-    } catch (e) {
-      console.error("TEST ERROR", e);
-    }
+    await ssh.upload(from, sftpUrl!);
   }, 7000);
-  itIf(true)('exec', async () => {
-    const sftpUrl = process.env.UZDU_TEST_SSH;
-    if(!sftpUrl) throw new Error("Undefined environment variable UZDU_TEST_SSH");
-    await ssh.execute(sftpUrl, ['echo Hello'], {
+  itIf(testSsh)('exec', async () => {
+    await ssh.execute(sftpUrl!, ['echo Hello'], {
       callback: (val) => { console.log("SSH execute output", val.message)}
     });
-  }, 7000);
-  it.skip('upload to envoy', async () => {
-    const sftpUrl = "sftp://root:itranga123@185.104.251.233/opt/docker/minecraft";
-    if(!sftpUrl) throw new Error("Undefined environment variable UZDU_TEST_SSH");
-    const from = resolvePath("./test/web/index.html");
-    await ssh.upload(from, sftpUrl);
   }, 7000);
 });
 describe.skip("S3", () => {
