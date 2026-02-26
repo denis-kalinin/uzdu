@@ -82,7 +82,7 @@ describe.skip("Utils", () => {
 
 const itIf = (condition: boolean) => (condition ? it : it.skip);
 describe("SSH", () => {
-  const sftpUrl = process.env.ACT ? "sftp://admin:admin@localhost/tmp/test/" : process.env.UZDU_TEST_SSH;
+  const sftpUrl = process.env.UZDU_TEST_SSH;
   const testSsh = sftpUrl ? true : false;
   itIf(testSsh)('upload', async () => {
     const from = resolvePath("./test/web/index.html");

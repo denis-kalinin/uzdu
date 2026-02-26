@@ -114,7 +114,6 @@ async function shellCommand(sshClient: Client, command: string,
           res(code);
         }
       }).on('exit', (code: number, signal: number) => { // or on 'exit'?
-        console.log("ON EXIT", code);
         if(code != 0){
           options?.callback?.({error: `Exit command signal=${signal} and exit code=${code}`, code, signal});
           rej(new Error(`Exit code ${code}`));
@@ -122,7 +121,6 @@ async function shellCommand(sshClient: Client, command: string,
           res(code);
         }
       }).on('data', (message: Uint8Array<ArrayBuffer>) => {
-        console.log("DATA of exec");
         options?.callback?.({message: decoder.decode(message).replace(/\n$/, "")});
       }).stderr.on('data', (error: Uint8Array<ArrayBuffer>) => {
         options?.callback?.({error: decoder.decode(error)});
