@@ -114,6 +114,7 @@ async function shellCommand(sshClient: Client, command: string,
           res(code);
         }
       }).on('exit', (code: number, signal: number) => { // or on 'exit'?
+        console.log("ON EXIT", code);
         if(code != 0){
           options?.callback?.({error: `Exit command signal=${signal} and exit code=${code}`, code, signal});
           rej(new Error(`Exit code ${code}`));
@@ -121,6 +122,7 @@ async function shellCommand(sshClient: Client, command: string,
           res(code);
         }
       }).on('data', (message: Uint8Array<ArrayBuffer>) => {
+        console.log("DATA of exec");
         options?.callback?.({message: decoder.decode(message).replace(/\n$/, "")});
       }).stderr.on('data', (error: Uint8Array<ArrayBuffer>) => {
         options?.callback?.({error: decoder.decode(error)});
@@ -195,24 +197,35 @@ async function connect(sshConfig: ConnectConfig){
     return await new Promise<Client>((resolve, reject) => {
       conn
         .on("error", (e) => {
+          console.error("CONNECT ERROR", e);
           reject(e);
         })
         .on("ready", () => {
           resolve(conn);
         })
         .connect({
-          timeout: 5,
+          timeout: 10,
           port: 22,
           algorithms: {
             cipher: [
-              "aes128-ctr", "aes192-ctr", "aes256-ctr", "aes256-cbc","aes128-cbc"
-              //"aes128-gcm", ////"aes128-gcm@openssh.com", //"aes256-gcm", ////"aes256-gcm@openssh.com", ////"aes192-cbc",
-            ]
+              "aes128-ctr", 
+              "aes192-ctr",
+              "aes256-ctr", "aes256-cbc","aes128-cbc",
+              "aes128-gcm", ////"aes128-gcm@openssh.com", //"aes256-gcm", ////"aes256-gcm@openssh.com", ////"aes192-cbc",
+            ],
+           //hmac: [
+              //"hmac-sha2-256-etm@openssh.com", "hmac-sha2-512-etm@openssh.com", "hmac-sha1-etm@openssh.com",
+              //"hmac-sha2-256", "hmac-sha2-512",
+              //"hmac-sha1", 
+              //"hmac-md5", "hmac-sha2-256-96", "hmac-sha2-512-96",
+              //"hmac-ripemd160", "hmac-sha1-96", "hmac-md5-96"
+            //]
           },
           ...sshConfig
         })
     });
   } catch (e) {
+    console.error("CATCH ERROR")
     conn.destroy();
     throw e;
   }

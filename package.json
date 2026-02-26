@@ -3,27 +3,27 @@
   "version": "0.0.0-dev",
   "description": "UZDU - universal zipper, downloader and uploader. Move files to/from zip, clouds (AWS, Azure), to HTTP PUT (e.g. Nexus) and to SSH",
   "bin": {
-    "uzdu": "lib/uzdu.js"
+    "uzdu": "lib/cli.js"
   },
   "type": "module",
-  "main": "lib/uzdu.js",
-  "types": "lib/uzdu.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "build": "tsup-node",
-    "test:help": "tsx src/uzdu.ts help",
-    "test:s3": "tsx src/uzdu.ts upload aws -d -- test/web/ uzdu:ru-central1-d:http://storage.yandexcloud.net",
-    "test:ssh": "tsx src/uzdu.ts upload ssh test/web /opt/youroute.app/web/",
-    "test:azure": "npm run test:metadata && tsx src/uzdu.ts upload azure -d --azure -- test/web",
-    "test:http:upload": "tsx src/uzdu.ts upload http --dotenv --header \"Authorization: Basic TOKEN=\" website.zip https://nexus/repository/private-raw/dist/test-upload/website.zip",
-    "test:http:download": "tsx src/uzdu.ts download http --dotenv --header \"Authorization: Basic TOKEN=\" https://nexus/repository/private-raw/dist/test-upload/website.zip website.zip",
-    "test:exec": "tsx src/uzdu.ts exec ssh -d -- sftp://root@m.itranga.com/~ 'echo \"Hello world!\"; pwd'",
-    "test:zip": "tsx src/uzdu.ts zip test/web website.zip",
+    "test:help": "tsx src/cli.ts help",
+    "test:s3": "tsx src/cli.ts upload aws -d -- test/web/ uzdu:ru-central1-d:http://storage.yandexcloud.net",
+    "test:ssh": "tsx src/cli.ts upload ssh test/web /opt/youroute.app/web/",
+    "test:azure": "npm run test:metadata && tsx src/cli.ts upload azure -d --azure -- test/web",
+    "test:http:upload": "tsx src/cli.ts upload http --dotenv --header \"Authorization: Basic TOKEN=\" website.zip https://nexus/repository/private-raw/dist/test-upload/website.zip",
+    "test:http:download": "tsx src/cli.ts download http --dotenv --header \"Authorization: Basic TOKEN=\" https://nexus/repository/private-raw/dist/test-upload/website.zip website.zip",
+    "test:exec": "tsx src/cli.ts exec ssh -d -- sftp://root@m.itranga.com/~ 'echo \"Hello world!\"; pwd'",
+    "test:zip": "tsx src/cli.ts zip test/web website.zip",
     "test:dist": "npm run test:zip && npm run test:http:upload",
-    "test:metadata": "tsx src/uzdu.ts metadata test/website",
+    "test:metadata": "tsx src/cli.ts metadata test/website",
     "test": "jest",
-    "uzdu": "tsx src/uzdu.ts",
-    "help": "tsx src/uzdu.ts -h",
-    "ver": "tsx src/uzdu.ts -V"
+    "uzdu": "tsx src/cli.ts",
+    "help": "tsx src/cli.ts -h",
+    "ver": "tsx src/cli.ts -V"
   },
   "keywords": [
     "azure",

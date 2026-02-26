@@ -79,7 +79,7 @@ const getArgs = (processArguments: string[]) => {
 
 export default defineConfig({
   entry: [
-    "src/uzdu.ts",
+    "src/index.ts",
     "src/uzdu-upload.ts",
     "src/uzdu-download.ts",
     "src/uzdu-metadata.ts",
@@ -87,6 +87,7 @@ export default defineConfig({
     "src/uzdu-unzip.ts",
     "src/uzdu-copy.ts",
     "src/uzdu-exec.ts",
+    "src/cli.ts",
   ],
   clean: true,
   //format: ["cjs"],
