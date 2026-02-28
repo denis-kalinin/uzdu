@@ -6,7 +6,6 @@
     "uzdu": "./lib/cli.js"
   },
   "type": "module",
-
   "exports": {
     "import": {
       "types": "./lib/index.d.ts",
