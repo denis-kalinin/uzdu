@@ -3,6 +3,7 @@ import { Command } from "commander";
 import * as ssh from "../src/ssh";
 import s3upload, { S3Config } from "../src/s3";
 import { getEnvironment, initEnvironment, listFiles, resolvePath, shouldBeDirectory } from "../src/utils";
+import { allowedNodeEnvironmentFlags } from "process";
 
 try {
   const theEnv = getEnvironment();

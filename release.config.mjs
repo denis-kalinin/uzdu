@@ -28,9 +28,9 @@ function getPkgRoot(){
   const packageLibDir = "lib";
   const files = [packageLibDir];
   const packageJson = {
-    name, version, description, bin, type, main, types, 
+    name, version, description, bin, type, types, 
     keywords, author, repository, license, dependencies,
-    engines, files
+    engines, files, exports,
   }
   mkdirSync(resolve(__dirname, pkgRoot, packageLibDir), { recursive: true });
   writeFileSync(resolve(__dirname, pkgRoot, 'package.json'), JSON.stringify(packageJson, null, 2) + '\n', 'utf8');

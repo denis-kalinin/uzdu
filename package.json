@@ -3,11 +3,13 @@
   "version": "0.0.0-dev",
   "description": "UZDU - universal zipper, downloader and uploader. Move files to/from zip, clouds (AWS, Azure), to HTTP PUT (e.g. Nexus) and to SSH",
   "bin": {
-    "uzdu": "lib/cli.js"
+    "uzdu": "./lib/cli.js"
   },
   "type": "module",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "exports": {
+    ".": "./lib/index.js"
+  },
+  "types": "./lib/index.d.ts",
   "scripts": {
     "build": "tsup-node",
     "test:help": "tsx src/cli.ts help",
