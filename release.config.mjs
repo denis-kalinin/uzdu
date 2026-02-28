@@ -32,7 +32,8 @@ function getPkgRoot(){
     keywords, author, repository, license, dependencies,
     engines, files, exports
   };
-  mkdirSync(resolve(__dirname, pkgRoot, packageLibDir), { recursive: true });
+  const libDir = resolve(__dirname, pkgRoot, packageLibDir);
+  mkdirSync(libDir, { recursive: true });
   writeFileSync(resolve(__dirname, pkgRoot, 'package.json'), JSON.stringify(packageJson, null, 2) + '\n', 'utf8');
   try{
     cpSync(resolve(__dirname, "README.md"), resolve(__dirname, pkgRoot, 'README.md'));
@@ -46,6 +47,7 @@ function getPkgRoot(){
  */
 const getConfig = () => {
   const { pkgRoot, libDir } = getPkgRoot();
+  console.log(`--outDir=${libDir}`);
   const config = {
     branches: ["main"],
     plugins: [

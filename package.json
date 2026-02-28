@@ -7,10 +7,11 @@
   },
   "type": "module",
   "exports": {
-    "import": {
-      "types": "./lib/index.d.ts",
-      "node": "./lib/index.cjs",
-      "default": "./lib/index.mjs"
+    ".": {
+      "import": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      }
     }
   },
   "types": "./lib/index.d.ts",
