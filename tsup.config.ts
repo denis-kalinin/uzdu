@@ -78,25 +78,34 @@ const getArgs = (processArguments: string[]) => {
 }
 
 export default defineConfig({
+  entry: ['src/**/*.[jt]s'],
+  /*
   entry: [
     "src/index.ts",
-    //"src/uzdu-upload.ts",
-    //"src/uzdu-download.ts",
-    //"src/uzdu-metadata.ts",
-    //"src/uzdu-zip.ts",
-    //"src/uzdu-unzip.ts",
-    //"src/uzdu-copy.ts",
-    //"src/uzdu-exec.ts",
+    "src/uzdu-upload.ts",
+    "src/uzdu-download.ts",
+    "src/uzdu-metadata.ts",
+    "src/uzdu-zip.ts",
+    "src/uzdu-unzip.ts",
+    "src/uzdu-copy.ts",
+    "src/uzdu-exec.ts",
     "src/cli.ts",
   ],
+  */
+  platform: 'node',
+  target: 'node20',
   clean: true,
+  splitting: false,
+  bundle: false,
   format: ["esm"],
   dts: true,
-  sourcemap: false,
+  sourcemap: true,
   minify: false,
+  /*
   outExtension({ format }) {
     return format === 'esm' ? { js: '.mjs' } : { js: '.cjs' };
   },
+  */
   define: {
     //NPM_PACKAGE_VERSION: process.env.GITHUB_RUN_NUMBER ? JSON.stringify(`${packageJson.version}-build_${process.env.GITHUB_RUN_NUMBER}`) : JSON.stringify(packageJson.version),
     NPM_PACKAGE_VERSION: getVersion(),
