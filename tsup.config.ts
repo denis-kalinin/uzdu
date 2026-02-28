@@ -90,11 +90,13 @@ export default defineConfig({
     "src/cli.ts",
   ],
   clean: true,
-  //format: ["cjs"],
-  format: ["esm"],
+  format: ["esm", "cjs"],
   dts: true,
   sourcemap: false,
   minify: false,
+  outExtension({ format }) {
+    return format === 'esm' ? { js: '.mjs' } : { js: '.cjs' };
+  },
   define: {
     //NPM_PACKAGE_VERSION: process.env.GITHUB_RUN_NUMBER ? JSON.stringify(`${packageJson.version}-build_${process.env.GITHUB_RUN_NUMBER}`) : JSON.stringify(packageJson.version),
     NPM_PACKAGE_VERSION: getVersion(),
