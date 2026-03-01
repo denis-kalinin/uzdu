@@ -93,19 +93,17 @@ export default defineConfig({
   ],
   */
   platform: 'node',
-  target: 'node20',
+  target: 'node16',
   clean: true,
-  splitting: false,
-  bundle: false,
-  format: ["esm"],
+  //splitting: true,
+  bundle: true,
+  format: ["esm", "cjs"],
   dts: true,
   sourcemap: true,
   minify: false,
-  /*
   outExtension({ format }) {
     return format === 'esm' ? { js: '.mjs' } : { js: '.cjs' };
   },
-  */
   define: {
     //NPM_PACKAGE_VERSION: process.env.GITHUB_RUN_NUMBER ? JSON.stringify(`${packageJson.version}-build_${process.env.GITHUB_RUN_NUMBER}`) : JSON.stringify(packageJson.version),
     NPM_PACKAGE_VERSION: getVersion(),

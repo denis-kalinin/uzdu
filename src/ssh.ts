@@ -85,7 +85,7 @@ async function shellExec(
     }
   ){
   if(!commands) {
-    return Promise.reject("shellExec did not get any command");
+    throw new Error("shellExec did not get any command");
   }
   if(options?.cwd){
     const command = `set -e; cd ${options.cwd}; set +e; ${commands.join(';')}`;
@@ -94,6 +94,7 @@ async function shellExec(
     const shellCommands = commands.map((command) => () => shellCommand(sshConnection, command, options));
     await runSequentially(shellCommands);
   }
+  options?.callback?.({code:0});
 }
 
 type ShellTask = (sshClient: Client, command: string, options?: { cwd?: string, callback?: ShellCommandCallback}) => Promise<number>;

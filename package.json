@@ -6,11 +6,17 @@
     "uzdu": "./lib/cli.mjs"
   },
   "type": "module",
+  "module": "./lib/index.mjs",
+  "main": "./lib/index.cjs",
   "exports": {
     ".": {
       "import": {
         "types": "./lib/index.d.ts",
-        "default": "./lib/index.js"
+        "default": "./lib/index.mjs"
+      },
+      "require": {
+        "types": "./lib/index.d.cts",
+        "default": "./lib/index.cjs"
       }
     }
   },
