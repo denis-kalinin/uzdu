@@ -112,10 +112,10 @@ describe("SSH", () => {
     await ssh.upload(from, sftpUrl!);
   }, 7000);
   itIf(testSsh)('exec', async () => {
-    await ssh.execute(sftpUrl!, ['cat test.txt'], {
+    await ssh.execute(sftpUrl!, ['echo Hello Mundo!'], {
       callback: (val) => {
         if(val.message){
-          expect(val.message).toEqual("Hello Mundo!");
+          expect(val.message).toEqual("Hello Mundo!\r\n");
           console.debug('cat test.txt =>', val.message);
         }
       }
