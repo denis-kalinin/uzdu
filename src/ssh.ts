@@ -99,19 +99,25 @@ async function shellExec(
 
 type ShellTask = (sshClient: Client, command: string, options?: { cwd?: string, callback?: ShellCommandCallback}) => Promise<number>;
 
+//const r1 = /^([^\\\r]*)/g; //Hello world!\r\n => Hello world
+//const r2 = /(?<=\\r)([^\\r]*\\r\\n)/g; //\rHit:3 htt...\r\n => Hit:3 htt...
+const r = /^([^\r]*)$|^([^\r]*)\r\n|(?<=\r)([^\r]*)\r\n/g;
 async function shellCommand(sshClient: Client, command: string,
     options?: {
       callback?: ShellCommandCallback
     }) {
-  return new Promise<number>((res, rej) => {
+  return await new Promise<number>((res, rej) => {
     const decoder = new TextDecoder();
-    sshClient.exec(command, (err, stream) => {
-      if (err) rej(err);
+    sshClient.exec(command, {pty: true}, (err, stream) => {
+      if (err) {
+        rej(err);
+        return;
+      }
       stream.on('close', (code: number, signal: number) => { // or on 'exit'?
         if(code != 0){
           options?.callback?.({error: `closing SSH by signal=${signal} and exit code=${code}`, code, signal});
           rej(new Error(`Close code ${code}`));
-        } else {
+        } else {;
           res(code);
         }
       }).on('exit', (code: number, signal: number) => { // or on 'exit'?
@@ -122,7 +128,11 @@ async function shellCommand(sshClient: Client, command: string,
           res(code);
         }
       }).on('data', (message: Uint8Array<ArrayBuffer>) => {
-        options?.callback?.({message: decoder.decode(message).replace(/\n$/, "")});
+        const output = decoder.decode(message);
+        const gm = output.match(r);
+        if(gm){
+          options?.callback?.({message: gm.join('')});
+        }
       }).stderr.on('data', (error: Uint8Array<ArrayBuffer>) => {
         options?.callback?.({error: decoder.decode(error)});
       });
@@ -133,8 +143,8 @@ async function shellCommand(sshClient: Client, command: string,
 function _uploadFile(source: string, destination: string, sftp: SFTPWrapper){
   return new Promise<void>((resolve,reject) => {
     sftp.stat(destination, async (err, stats) => {
-      if(err) {
-        sftp.fastPut(source, destination,{}, (err) => { if(err) reject(err); else resolve(); });
+      if(err) { //i.e. no such file
+        sftp.fastPut(source, destination,{}, (err) => {if(err) reject(err); else resolve();});
       } else if (stats.isFile()) {
         sftp.fastPut(source, destination,{}, (err) => {if(err) reject(err); else resolve();});
       } else if(stats.isDirectory()) {
@@ -151,6 +161,7 @@ function uploadFiles(sourceFiles: Record<string, string>, source: string, destin
   return new Promise<void>((resolve, reject) => {
     sshConnection.sftp(async (err, sftp) => {
       if(err){
+        //check in /etc/ssh/sshd_config, that it has "Subsystem    sftp    internal-sftp"
         reject(err);
       } else {
         if(Object.keys(sourceFiles).length == 1){
@@ -190,10 +201,10 @@ function uploadFiles(sourceFiles: Record<string, string>, source: string, destin
   });
 }
 
-async function connect(sshConfig: ConnectConfig){
+function connect(sshConfig: ConnectConfig){
   const conn = new Client();
   try {
-    return await new Promise<Client>((resolve, reject) => {
+    return new Promise<Client>((resolve, reject) => {
       conn
         .on("error", (e) => {
           console.error("CONNECT ERROR", e);
@@ -205,26 +216,27 @@ async function connect(sshConfig: ConnectConfig){
         .connect({
           timeout: 10,
           port: 22,
+          /*
           algorithms: {
             cipher: [
               "aes128-ctr", 
               "aes192-ctr",
               "aes256-ctr", "aes256-cbc","aes128-cbc",
-              "aes128-gcm", ////"aes128-gcm@openssh.com", //"aes256-gcm", ////"aes256-gcm@openssh.com", ////"aes192-cbc",
+              //"aes128-gcm", ////"aes128-gcm@openssh.com", //"aes256-gcm", ////"aes256-gcm@openssh.com", ////"aes192-cbc",
             ],
-           //hmac: [
-              //"hmac-sha2-256-etm@openssh.com", "hmac-sha2-512-etm@openssh.com", "hmac-sha1-etm@openssh.com",
-              //"hmac-sha2-256", "hmac-sha2-512",
+            hmac: [
+              "hmac-sha2-256-etm@openssh.com", "hmac-sha2-512-etm@openssh.com", "hmac-sha1-etm@openssh.com",
+              "hmac-sha2-256", "hmac-sha2-512",
               //"hmac-sha1", 
               //"hmac-md5", "hmac-sha2-256-96", "hmac-sha2-512-96",
               //"hmac-ripemd160", "hmac-sha1-96", "hmac-md5-96"
-            //]
+            ]
           },
+          */
           ...sshConfig
         })
     });
   } catch (e) {
-    console.error("CATCH ERROR")
     conn.destroy();
     throw e;
   }

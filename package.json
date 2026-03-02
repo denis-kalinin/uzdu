@@ -33,7 +33,7 @@
     "test:zip": "tsx src/cli.ts zip test/web website.zip",
     "test:dist": "npm run test:zip && npm run test:http:upload",
     "test:metadata": "tsx src/cli.ts metadata test/website",
-    "test": "jest",
+    "jest": "jest",
     "uzdu": "tsx src/cli.ts",
     "help": "tsx src/cli.ts -h",
     "ver": "tsx src/cli.ts -V"

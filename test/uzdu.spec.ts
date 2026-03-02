@@ -45,7 +45,7 @@ describe.skip("CLI", () => {
   });
 });
 
-describe.skip("Utils", () => {
+describe("Utils", () => {
   it.skip("file map", async () => {
     const plainFiles = [
       "/opt/youroute.app/api-server/web.xml","/opt/youroute.app/api-server/a.js",
@@ -79,6 +79,29 @@ describe.skip("Utils", () => {
     expect(config.username).toBeDefined();
     expect(config.host).toBeDefined();
   });
+  const r = /^([^\r]*)$|^([^\r]*)\r\n|(?<=\r)([^\r]*)\r\n/g;
+  it("Parsing output", () => {
+    //const text = 'Hello world!\r\nReading package lists... 49%\r\rReading package lists... 50%\r\n\rReading package lists... 51%\r\n\rgas\r';
+    const text = 'Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease\r\n' +
+        '\r0% [Waiting for headers]\r                        \rHit:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease\r\n' +
+        '\r                        \rHit:3 http://security.ubuntu.com/ubuntu noble-security InRelease\r\n' +
+        '\r0% [Waiting for headers]';
+    const gm = text.match(r);
+    expect(gm).not.toBeNull();
+    expect(gm?.length).toEqual(3);
+  })
+  it("Parsing \"Hello world!\\r\\n\" output", () => {
+    const text = 'Hello world!\r\n';
+    const gm = text.match(r);
+    expect(gm).not.toBeNull();
+    expect(gm?.length).toEqual(1);
+  })
+  it("Parsing \"Hello world!\" output", () => {
+    const text = 'Hello world!';
+    const gm = text.match(r);
+    expect(gm).not.toBeNull();
+    expect(gm?.length).toEqual(1);
+  })
 });
 
 const itIf = (condition: boolean) => (condition ? it : it.skip);
@@ -86,14 +109,19 @@ describe("SSH", () => {
   const sftpUrl = process.env.UZDU_TEST_SSH;
   const testSsh = sftpUrl ? true : false;
   itIf(testSsh)('upload', async () => {
-    const from = resolvePath("./test/web/index.html");
+    const from = resolvePath("./test/web/");
     await ssh.upload(from, sftpUrl!);
   }, 7000);
   itIf(testSsh)('exec', async () => {
-    await ssh.execute(sftpUrl!, ['echo Hello'], {
-      callback: (val) => { console.log("SSH execute output", val.message)}
+    await ssh.execute(sftpUrl!, ['cat test.txt'], {
+      callback: (val) => {
+        if(val.message){
+          expect(val.message).toEqual("Hello Mundo!");
+          console.debug('cat test.txt =>', val.message);
+        }
+      }
     });
-  }, 7000);
+  }, 15000);
 });
 describe.skip("S3", () => {
   const testS3 = process.env.UZDU_TEST_S3 ? true : false;
