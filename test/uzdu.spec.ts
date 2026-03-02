@@ -7,7 +7,6 @@ import { allowedNodeEnvironmentFlags } from "process";
 
 try {
   const theEnv = getEnvironment();
-  console.log(theEnv);
   initEnvironment(theEnv);
 } catch {}
 
@@ -35,7 +34,7 @@ describe.skip("CLI", () => {
       .exitOverride()
       .command("order-cake")
       .action(() => {});
-    let caughtErr: { code: string};
+    let caughtErr: { code: string };
     try {
       program.parse(["node", "uzdu", "order-cake", "--color"]);
     } catch (err) {
