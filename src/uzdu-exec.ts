@@ -1,5 +1,5 @@
-import { Argument, Command, Option } from "commander";
-import { execute, ShellCallbackParams } from "./ssh";
+import { Command, Option } from "commander";
+import { execute, SshExecEvent, SshExecOptions } from "./ssh";
 import { outputConfiguration } from "./utils";
 
 const command = new Command();
@@ -15,9 +15,9 @@ command.command("ssh")
     new Option("-d|--dotenv [file]", "load environment variables from a property file, i.e. a file with \"key=value\" lines.")
     .preset(".env"))
   .addOption(new Option("--privateKeyPath [path to file]", "Path to SSH private key, fallback is UZDU_SSH_KEY_PATH environment variable. Also consider using UZDU_SSH_KEY to provide SSH private key content or UZDU_SSH_PASSWORD."))
-  .action(async (sshUrl: string, command: string, options: any, thisCommand: Command) => {
+  .action(async (sshUrl: string, command: string, options: SshExecOptions, thisCommand: Command) => {
     try {
-      options.callback = (value: ShellCallbackParams) => {
+      options.sshExecEventListener = (value: SshExecEvent) => {
         if(value.message) console.log(value.message);
         if(value.error) console.error(value.error);
       };

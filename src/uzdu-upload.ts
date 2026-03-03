@@ -3,9 +3,8 @@ import { getEnvironment, initEnvironment, outputConfiguration, resolvePath, safe
 import azUpload, { AzureStorageOptions } from "./azure";
 import s3Upload, { S3Config } from "./s3";
 import { upload as httpUpload}  from "./http";
-import { getCredentials, upload as sshUpload } from "./ssh";
-import { ConnectConfig } from "ssh2";
-import fs from "fs";
+import { SshBaseOptions, upload as sshUpload } from "./ssh";
+
 
 
 const command = new Command();
@@ -108,7 +107,7 @@ command.command("ssh")
     new Option("-d|--dotenv [file]", "load environment variables from a property file, i.e. a file with \"key=value\" lines.")
     .preset(".env"))
   .addOption(new Option("--privateKeyPath [path to file]", "Path to SSH private key, fallback is UZDU_SSH_KEY_PATH environment variable. Also consider using UZDU_SSH_KEY to provide SSH private key content or UZDU_SSH_PASSWORD."))
-  .action(async (source: string, sftpUrl: string, options: any, thisCommand: Command) => {
+  .action(async (source: string, sftpUrl: string, options: SshBaseOptions, thisCommand: Command) => {
     try {
       await sshUpload(resolvePath(source), sftpUrl, options);
     } catch (e) {

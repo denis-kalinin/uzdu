@@ -49,7 +49,7 @@ export type SshExecOptions = SshBaseOptions & {
  * 
  * @param source local file or directory
  * @param sftpUrl - URL formatted as sftp://[username[:password]@]<ip-or-hostname>[:port]/[cwd]
- * @param options - additional {@link SftpUploadOptions} if `sftpUrl` is not complete
+ * @param options - additional {@link SshBaseOptions} if `sftpUrl` is not complete
  */
 export async function upload(source: string, sftpUrl: string, options?: SshBaseOptions ) {
   await new Promise<void>((resolve, reject) => {
