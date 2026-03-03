@@ -5,11 +5,53 @@ import { getEnvironment, initEnvironment, listFiles, resolvePath, runSequentiall
 import deepmerge from "deepmerge";
 
 export type SshCredentials = { password: string; privateKey?: undefined } | { password?: undefined ; privateKey: Buffer | string };
-export type ShellCallbackParams = {message?:string, error?:string, signal?:number, code?:number};
-export type ShellCommandCallback = (value: ShellCallbackParams) => void;
+/**
+ * An event in an SSH `exec` process
+ */
+export type SshExecEvent= {
+  /** SSH `stdout` output */
+  message?:string,
+  /** SSH `stderr` output */
+  error?:string,
+  /** SSH signal */
+  signal?:number,
+  /** SSH command's return code */
+  code?:number
+};
+export type SshExecEventListener = (event: SshExecEvent) => void;
 export type SftpConnectConfig = ConnectConfig & { path?: string };
 
-export async function upload(source: string, sftpUrl: string, options?: { privateKeyPath?: string, dotenv?: string } ) {
+/**
+ * SSH base options
+ * @param privateKeyPath - path to a local ssh private key file
+ * @param dotenv - path to environment file, e.g. `.env`
+ */
+export type SshBaseOptions = {
+  /** path to a local ssh private key file */
+  privateKeyPath?: string;
+  /**
+   * path to environement file. Considred variables there are 
+   * `UZDU_SSH_PASSWORD`, `UZDU_SSH_KEY`, `UZDU_SSH_KEY_PATH`
+   */
+  dotenv?: string;
+}
+/**
+ * Extended SSH optiosn for `exec` operation
+ */
+export type SshExecOptions = SshBaseOptions & {
+  /**
+   * a function to be invoked on every `data`, `close` and `exit` event in SSH session
+   */
+  sshExecEventListener?: SshExecEventListener
+}
+/**
+ * Uploads local files to an SFTP.
+ * 
+ * @param source local file or directory
+ * @param sftpUrl - URL formatted as sftp://[username[:password]@]<ip-or-hostname>[:port]/[cwd]
+ * @param options - additional {@link SftpUploadOptions} if `sftpUrl` is not complete
+ */
+export async function upload(source: string, sftpUrl: string, options?: SshBaseOptions ) {
   await new Promise<void>((resolve, reject) => {
     fs.stat(source, async (err, stats) => {
       if(err) {
@@ -41,8 +83,13 @@ export async function upload(source: string, sftpUrl: string, options?: { privat
     });
   });
 }
-
-export async function execute(sshAddress: string, commands: string[], options?: { privateKeyPath?: string, dotenv?: string, callback?: ShellCommandCallback } ) {
+/**
+ * 
+ * @param sshAddress 
+ * @param commands 
+ * @param options 
+ */
+export async function execute(sshAddress: string, commands: string[], options?: SshExecOptions ) {
   await new Promise<void>(async (resolve, reject) => {
     let sshConnection: Client | undefined;
     try {
@@ -80,7 +127,7 @@ async function mkdirs(sshConnection: Client, destination: string, sources: Recor
 async function shellExec(
     sshConnection: Client, commands: string[],
     options?: {
-      callback?: ShellCommandCallback,
+      sshExecEventListener?: SshExecEventListener,
       cwd?: string,
     }
   ){
@@ -94,17 +141,14 @@ async function shellExec(
     const shellCommands = commands.map((command) => () => shellCommand(sshConnection, command, options));
     await runSequentially(shellCommands);
   }
-  options?.callback?.({code:0});
+  options?.sshExecEventListener?.({code:0});
 }
 
-type ShellTask = (sshClient: Client, command: string, options?: { cwd?: string, callback?: ShellCommandCallback}) => Promise<number>;
+//type ShellTask = (sshClient: Client, command: string, options?: { cwd?: string, callback?: ShellCommandCallback}) => Promise<number>;
 
-//const r1 = /^([^\\\r]*)/g; //Hello world!\r\n => Hello world
-//const r2 = /(?<=\\r)([^\\r]*\\r\\n)/g; //\rHit:3 htt...\r\n => Hit:3 htt...
-const r = /^([^\r]*)$|^([^\r]*)\r\n|(?<=\r)([^\r]*)\r\n/g;
 async function shellCommand(sshClient: Client, command: string,
     options?: {
-      callback?: ShellCommandCallback
+      sshExecEventListener?: SshExecEventListener
     }) {
   return await new Promise<number>((res, rej) => {
     const decoder = new TextDecoder();
@@ -115,26 +159,23 @@ async function shellCommand(sshClient: Client, command: string,
       }
       stream.on('close', (code: number, signal: number) => { // or on 'exit'?
         if(code != 0){
-          options?.callback?.({error: `closing SSH by signal=${signal} and exit code=${code}`, code, signal});
+          options?.sshExecEventListener?.({error: `closing SSH by signal=${signal} and exit code=${code}`, code, signal});
           rej(new Error(`Close code ${code}`));
         } else {;
           res(code);
         }
       }).on('exit', (code: number, signal: number) => { // or on 'exit'?
         if(code != 0){
-          options?.callback?.({error: `Exit command signal=${signal} and exit code=${code}`, code, signal});
+          options?.sshExecEventListener?.({error: `Exit command signal=${signal} and exit code=${code}`, code, signal});
           rej(new Error(`Exit code ${code}`));
         } else {
           res(code);
         }
       }).on('data', (message: Uint8Array<ArrayBuffer>) => {
         const output = decoder.decode(message);
-        const gm = output.match(r);
-        if(gm){
-          options?.callback?.({message: gm.join('')});
-        }
+        options?.sshExecEventListener?.({message: output});
       }).stderr.on('data', (error: Uint8Array<ArrayBuffer>) => {
-        options?.callback?.({error: decoder.decode(error)});
+        options?.sshExecEventListener?.({error: decoder.decode(error)});
       });
     });
   });
@@ -161,8 +202,7 @@ function uploadFiles(sourceFiles: Record<string, string>, source: string, destin
   return new Promise<void>((resolve, reject) => {
     sshConnection.sftp(async (err, sftp) => {
       if(err){
-        //check in /etc/ssh/sshd_config, that it has "Subsystem    sftp    internal-sftp"
-        reject(err);
+        reject(new Error(`On the SSH server, check if there is a "Subsystem sftp interna-sftp" instruction in the file /etc/ssh/sshd_config`, { cause: err }));
       } else {
         if(Object.keys(sourceFiles).length == 1){
           const lstat = fs.lstatSync(source);
@@ -386,7 +426,7 @@ export function getRemoteDestination(sftpUrl: string): string {
 /**
  * Substitute ~ to home directory
  * @param path
- *  @returns absolute path or relative to home directory
+ * @returns absolute path or relative to home directory
  */
 function normilizeSftpPath(path?: string): string | undefined {
   if(path == undefined) return undefined;

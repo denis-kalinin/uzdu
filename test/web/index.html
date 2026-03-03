@@ -1,12 +1,36 @@
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <title>Test page</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="google" content="notranslate"/>
-    </head>
-    <body>
-        <p>This is test</p>
-        <img src="icons/16/A.png" alt="logo" />
-    </body>
+  <head>
+    <meta charset="utf-8" />
+    <title>Test page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="google" content="notranslate"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+  </head>
+  <body>
+    <p>This is test</p>
+    <pre id="terminal"></pre>
+    <script>
+      const output = 'Hello\rPa';
+      var term = new window.Terminal({
+          cursorBlink: true
+      });
+      term.open(document.getElementById('terminal'));
+      term.write(output);
+      const output2 = '\rTU\r\n\033[31mYour name\033[0m';
+      term.writeln(output2);
+      term.write('\033[32mroot:/tmp$\033[0m');
+      term.onData(data => {
+      if (data.charCodeAt(0) === 13) { // Enter key
+        term.write('\r\n> ');
+      } else if (data.charCodeAt(0) === 127) { // Backspace
+        if (term._core.buffer.x > 2) { // Prevent deleting prompt
+          term.write('\b \b');
+        }
+      } else {
+        term.write(data); // Echo typed character
+      }
+    });
+    </script>
+  </body>
 </html>
