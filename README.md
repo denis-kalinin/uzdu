@@ -38,6 +38,12 @@ bunx uzdu -h
 
 - http `npx uzdu download http --dotenv --header \"Authorization: Basic TOKEN=\" https://nexus/repository/private-raw/dist/test-uzdu/website.zip website.zip`
 
+### remote execution (exec ssh)
+
+- `npx uzdu exec ssh username:password@example.com date`
+- `bunx -y --package uzdu -- uzdu exec ssh sftp://username:password@example.com:22/opt "sudo ls -la"`
+- `npx uzdu exec ssh sftp://user:password@example.com/opt 'echo \"Hello world! Today is $(date) and current directory is $(pwd)\"'`
+
 ### working with zip-archives
 
 - zip `npx uzdu zip build/ ./build.zip`
